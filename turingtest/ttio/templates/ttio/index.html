@@ -1,0 +1,29 @@
+{% extends 'ttio/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{% endblock %} 
+
+{% block content %}
+<body>
+	<div id="page-wrapper">
+
+		<!-- Header -->
+		{% include 'ttio/header.html' %}
+
+    <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/>
+    <div class="col-md-12 text-center">
+      <h1>
+          Coming Soon  
+        </h1>
+    </div>
+		{% include 'ttio/footer.html' %}
+
+	</div>
+
+	{% block extra_js %}
+	<!--Extra Scripts-->
+	{% endblock %}
+	
+</body>
+{% endblock %}
