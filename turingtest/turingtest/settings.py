@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = SECURE_SETTINGS.get('secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True #TODO
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [] #TODO
 
 
 # Application definition
@@ -37,8 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-		'bootstrap3',
-		'ttio',
+	'bootstrap3',
+	'ttio',
+	'channels',
 ]
 
 MIDDLEWARE = [

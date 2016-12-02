@@ -1,2 +1,6 @@
 Django
 psycopg2
+django-bootstrap3
+asgi-redis
+channels
+daphne
