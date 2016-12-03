@@ -1,8 +1,10 @@
 from django.conf.urls import url
 from django.contrib import admin
-from ttio.views import index, about
+from ttio.views import index, about, model_VC
+
 
 urlpatterns = [
-    url(r'^', index, name="index"),
-    url(r'^about', about, name="about"),
+    url(r'^about$', about, name="about"),
+    url(r'^model$', model_VC, name="model"),
+    url(r'^$', index, name="index"),
 ]

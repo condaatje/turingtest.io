@@ -7,8 +7,7 @@ Feature-complete chat (right now it's user-trusting)
 
 Connect chat to model (Frontend -> node/socket -> Django ttioAPI -> socket emit)
     Should be a simple interface: post string from node server to ttio API server
-
-
+    √ connected chat to django and back again. Still don't have a model lol.
 
 
 Model (the big deal)

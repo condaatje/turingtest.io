@@ -21,5 +21,31 @@ io.on('connection', function(socket) {
     socket.on('c', function(msg) {
         console.log(msg);
         io.emit('c', msg);
+
+        var request = require('request');
+
+        //help from http://blog.modulus.io/node.js-tutorial-how-to-use-request-module
+        request({
+            url: 'http://turingtest.io/model', //URL to hit
+            qs: {
+                from: 'blog example',
+                time: +new Date()
+            }, //Query string data
+            method: 'POST',
+            headers: {
+                'Content-Type': 'MyContentType',
+                'Custom-Header': 'MyCustomHeader',
+            },
+            body: 'transcript from the socket server. Here we go.' //Set the body as a string
+        }, function(error, response, body) {
+            if (error) {
+                console.log("error: " + error);
+            } else {
+                console.log(response.statusCode, body);
+                io.emit('c', body);
+            }
+        });
+
+
     });
 });
