@@ -1,2 +1,22 @@
-Https
+
+
+Feature-complete chat (right now it's user-trusting)
+    - Sessions
+    - Usernames?
+
+
+Connect chat to model (Frontend -> node/socket -> Django ttioAPI -> socket emit)
+    Should be a simple interface: post string from node server to ttio API server
+
+
+
+
+Model (the big deal)
+    - All the ML stuff
+    - Neural Net
+    - 'Eavesdropping' learning method
+
+Https?
+Bootstrap UI
+
 
