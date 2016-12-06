@@ -20,13 +20,13 @@ io.on('connection', function(socket) {
 
     socket.on('c', function(msg) {
         console.log(msg);
-        io.emit('c', msg);
+        io.emit('c', msg); //make sure the actual message shows up on the screen
 
         var request = require('request');
 
         //help from http://blog.modulus.io/node.js-tutorial-how-to-use-request-module
         request({
-            url: 'http://turingtest.io/model', //URL to hit
+            url: 'http://turingtest.io/api/model', //URL to hit
             qs: {
                 from: 'blog example',
                 time: +new Date()
@@ -36,12 +36,14 @@ io.on('connection', function(socket) {
                 'Content-Type': 'MyContentType',
                 'Custom-Header': 'MyCustomHeader',
             },
-            body: 'transcript from the socket server. Here we go.' //Set the body as a string
+            body: msg
         }, function(error, response, body) {
             if (error) {
                 console.log("error: " + error);
             } else {
                 console.log(response.statusCode, body);
+                //var data = JSON.parse(body);
+                //io.emit('c', data["response"]);
                 io.emit('c', body);
             }
         });

@@ -1,21 +1,41 @@
 
-
-Feature-complete chat (right now it's user-trusting)
-    - Sessions
-    - Usernames?
-
-
-Connect chat to model (Frontend -> node/socket -> Django ttioAPI -> socket emit)
-    Should be a simple interface: post string from node server to ttio API server
-    √ connected chat to django and back again. Still don't have a model lol.
-
-
+Essential:
+================================
 Model (the big deal)
     - All the ML stuff
     - Neural Net
     - 'Eavesdropping' learning method
 
+Training:
+    - When someone guesses 'machine' correctly, punish.
+        - Guesses 'man,' reward. Will use 
+
+Explore vs. Exploit:
+    - Add some stochasticity in responses/behavior to make sure we're always learning
+
+NLP
+    - Going to start without any vectorization:
+        - Each new sentence/question has its own response
+        - "What's up?" is different from "What is up?"
+        - 'dumb' conversation model: every question is a new 'conversation'
+    - Then move into smarter vectorization for sentences
+        - Similar questions share response model
+    - Then move into smarter vectorization for conversations (if possible)
+        - Questions are not independent, conversations flow.
+        
+
+
+
+Not essential for Final Project scope:
+================================
+Clean up system - multi-server w/ dns-level apps for api etc.
+
+Feature-complete chat (right now it's user-trusting)
+    - Sessions
+    - Usernames?
+
 Https?
+
 Bootstrap UI
 
-
+Load balancer

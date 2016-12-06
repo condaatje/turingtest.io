@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db import models
 
 # Create your views here.
 def index(request):
@@ -30,9 +31,9 @@ def model_VC(request):
         #send transcript to model, get response sentence back
         #return
     
-    print "transcript: " + str(request.body)
+    print "From the Client: " + str(request.body)
     
-    return JsonResponse({'foo':'bar'})
+    return JsonResponse({'response':'Hello, my name is Alan.'})
 
 
 
