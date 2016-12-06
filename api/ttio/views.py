@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.db import models
+from ttio.models import Conversation
 
 # Create your views here.
 def index(request):
@@ -31,12 +31,33 @@ def model_VC(request):
         #send transcript to model, get response sentence back
         #return
     
-    print "From the Client: " + str(request.body)
+    #print "From the Client: " + str(request.body)
     
-    return JsonResponse({'response':'Hello, my name is Alan.'})
-
-
-
+    something = Conversation.objects.filter(question = str(request.body))
+    
+    if something.exists():
+        #get the responses
+        l = dict(something[0].responses) #TODO let's make this not an array?
+        
+        best = "bad best"
+        best_num = -1
+        for response, goodness in l.iteritems():
+            if goodness > best_num:
+                best = response
+                best_num = goodness
+        
+        return JsonResponse({'response': best})  
+        
+    else:
+        
+        Conversation.objects.create(question=str(request.body),
+            responses = {
+                'good response': 0.9,
+                'bad response': 0.1
+            }
+        )
+        
+        return JsonResponse({'response':'Hello, my name is Alan.'})    
 
 
 

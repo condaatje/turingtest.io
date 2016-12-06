@@ -27,12 +27,12 @@ io.on('connection', function(socket) {
         //help from http://blog.modulus.io/node.js-tutorial-how-to-use-request-module
         request({
             url: 'http://turingtest.io/api/model', //URL to hit
-            qs: {
+            qs: {//TODO do we need this?
                 from: 'blog example',
                 time: +new Date()
             }, //Query string data
             method: 'POST',
-            headers: {
+            headers: {//TODO?
                 'Content-Type': 'MyContentType',
                 'Custom-Header': 'MyCustomHeader',
             },
@@ -42,9 +42,15 @@ io.on('connection', function(socket) {
                 console.log("error: " + error);
             } else {
                 console.log(response.statusCode, body);
-                //var data = JSON.parse(body);
-                //io.emit('c', data["response"]);
-                io.emit('c', body);
+            
+                try {
+                    var data = JSON.parse(body);
+                    io.emit('c', data["response"]);
+                }
+                catch(err) {
+                    //TODO smoother error handling
+                    io.emit('c', body);
+                }
             }
         });
 
