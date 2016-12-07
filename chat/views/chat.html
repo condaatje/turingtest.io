@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Chat</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+</head>
+
+<body>
+    <!--<div class="container-fluid">-->
+    <br/><br/><br/>
+    <h2 class="text-center">Please note: TuringTest.io is still in development</h2>
+    <br/><br/><br/>
+    
+    <!--http://bootsnipp.com/snippets/40W9n-->
+    <div class="container">
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-heading">Begin your conversation</div>
+                <div class="panel-body pre-scrollable">
+                    <div class="container" id="messages">
+                        <!--This is where the magic happens-->
+                        <div class='row message-bubble'>
+                            <span><strong>Alan: </strong>Please state your name for the record.</span>
+                        </div>
+                        <div class='row message-bubble'>
+                            <span><strong><%= name %>: </strong><%= name %></span>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <form action="">
+                            <input class="form-control" id="m" autofocus="autofocus" autocomplete="off"/>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!--</div>-->
+    <script>
+    
+        /*global io*/ /*global $*/
+        var socket = io();
+        
+        //socket.emit('request_room', console.log(socket.id));
+        //socket.on('')
+        
+        $('form').submit(function() {
+            
+            var item = {
+                // 'room': conversation_id,
+                'person': "<%= name %>",
+                'message': $('#m').val()
+            }
+            socket.emit('client_chat', item);
+            $('#m').val('');
+            return false;
+        });
+        socket.on('display_message', function(msg) {
+            $('#messages').append("\
+            <div class='row message-bubble'>\
+            <span><strong>" + msg['person'] + ": </strong>" + msg['message'] + "</span>\
+            </div>");
+        });
+        socket.on('error', function(msg) {
+            // $('#messages').append($('<li>').text(msg));
+            $('#messages').append("<div class='row message-bubble'><p class='text-muted'>ERROR:</p><span>" + msg + "</span></div>");
+        });
+    </script>
+</body>
+
+</html>

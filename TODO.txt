@@ -8,7 +8,7 @@ Model (the big deal)
 
 Training:
     - When someone guesses 'machine' correctly, punish.
-        - Guesses 'man,' reward. Will use 
+    - When someone guesses 'human' incorrectly, reward.
 
 Explore vs. Exploit:
     - Add some stochasticity in responses/behavior to make sure we're always learning
@@ -22,7 +22,8 @@ NLP
         - Similar questions share response model
     - Then move into smarter vectorization for conversations (if possible)
         - Questions are not independent, conversations flow.
-        
+
+Time delay between question and response (could be another feature in the vector)
 
 
 
@@ -36,6 +37,7 @@ Feature-complete chat (right now it's user-trusting)
 
 Https?
 
-Bootstrap UI
-
 Load balancer
+
+Group Chat? This should at least be in the whitepaper/final paper
+    - Interesting to see how an AI could take part in a group conversation
