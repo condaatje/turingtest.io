@@ -14,24 +14,48 @@
     <br/><br/><br/>
     <h2 class="text-center">Please note: TuringTest.io is still in development</h2>
     <br/><br/><br/>
-    <ul id="messages"></ul>
-    <form action="">
-        <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
+    
+    <!--http://bootsnipp.com/snippets/40W9n-->
+    <div class="container">
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-heading">Begin your conversation</div>
+                <div class="panel-body pre-scrollable">
+                    <div class="container" id="messages">
+                        <!--This is where the magic happens-->
+                    </div>
+                    <div class="panel-footer">
+                        <form action="">
+                            <input class="form-control" id="m" autofocus="autofocus" autocomplete="off"/>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!--</div>-->
     <script>
         /*global io*/ /*global $*/
         var socket = io();
         $('form').submit(function() {
-            socket.emit('inquisitor_chat', $('#m').val());
+            var item = {
+                'person': 'Ondaatje',
+                'message': $('#m').val()
+            }
+            socket.emit('inquisitor_chat', item);
             $('#m').val('');
             return false;
         });
         socket.on('display_message', function(msg) {
-            $('#messages').append($('<li>').text(msg));
+            $('#messages').append("\
+            <div class='row message-bubble'>\
+            <span><strong>" + msg['person'] + ": </strong>" + msg['message'] + "</span>\
+            </div>");
         });
         socket.on('error', function(msg) {
-            $('#messages').append($('<li>').text(msg));
+            // $('#messages').append($('<li>').text(msg));
+            $('#messages').append("<div class='row message-bubble'><p class='text-muted'>ERROR:</p><span>" + msg + "</span></div>");
         });
     </script>
 </body>

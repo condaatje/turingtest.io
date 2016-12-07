@@ -54,7 +54,7 @@ io.on('connection', function(socket) {
                     user: 'TODO user or session',
                     time: +new Date()
                 },
-                body: msg
+                body: msg['message']
             }, function(error, response, body) {
                 if (error) {
                     console.log("error: " + error);
@@ -65,7 +65,11 @@ io.on('connection', function(socket) {
 
                     try {
                         var data = JSON.parse(body);
-                        io.emit('display_message', data["response"]);
+                        var item = {
+                            'person': 'Alan',
+                            'message': data["response"]
+                        }
+                        io.emit('display_message', item);
                     } catch (err) {
                         //TODO smoother error handling
                         io.emit('error', body);
