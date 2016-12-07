@@ -1,0 +1,55 @@
+{% extends 'ttio/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+
+{% endblock %} 
+
+{% block content %}
+<body>
+	<div id="page-wrapper">
+
+		<!-- Header -->
+		{% include 'ttio/header.html' %}
+		
+	
+		
+		<div class="container-fluid">
+		<!--http://stackoverflow.com/questions/16616260/django-template-context-for-loop-traversal-->
+		{% for key, values in data.items %}
+		<br/>
+		<table class="table table-striped">
+			<caption class="text-center" style="border: inherit; background-color: lightgrey;">
+				<strong>"{{key}}"</strong>
+			</caption>
+			<thead>
+				<tr>
+					<th class="col-sm-11">Response</th>
+					<th class="col-sm-1 text-right">Weight</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for k, v in values.items %}
+				<!--<p class="text-center"> {{k}} : {{v}} </p>-->
+				<tr>
+					<!--http://stackoverflow.com/questions/11481499/django-iterate-number-in-for-loop-of-a-template-->
+					<td>"{{k}}"</td>
+					<td class="text-right">{{v}}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		<br/>
+				
+		{% endfor %}
+		</div>
+		{% include 'ttio/footer.html' %}
+
+	</div>
+
+	{% block extra_js %}
+	{% endblock %}
+	
+</body>
+{% endblock %}
+

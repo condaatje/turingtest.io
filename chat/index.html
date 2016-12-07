@@ -7,13 +7,12 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script src="/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-
 </head>
 
 <body>
     <!--<div class="container-fluid">-->
     <br/><br/><br/>
-    <h1 class="text-center">Please note: TuringTest.io is still in development</h1>
+    <h2 class="text-center">Please note: TuringTest.io is still in development</h2>
     <br/><br/><br/>
     <ul id="messages"></ul>
     <form action="">
@@ -34,7 +33,6 @@
         socket.on('error', function(msg) {
             $('#messages').append($('<li>').text(msg));
         });
-        
     </script>
 </body>
 

@@ -13,7 +13,7 @@ def about(request):
     context = {     }
     return render(request, 'ttio/about.html', context)
 
-@csrf_exempt
+
 def conversation_VC(request):
     #TODO: this takes in a sentence (from the user),
     #and returns a sentence (from Alan)
@@ -38,19 +38,27 @@ def conversation_VC(request):
         return JsonResponse({'response':"I'm sorry, I don't quite understand."})    
 
 
-@csrf_exempt
 def punish(request):
     print "Punish Him!", request.body
     
     return HttpResponse(status=201)
     
-@csrf_exempt
+
 def reward(request):
     print "Reward view controller", request.body
     
     return HttpResponse(status=201)
-    
 
+
+def model(request):
+    # this is kind of a weird thing to have in the api 
+    # with display code and all that but not the end of the world
+    context = {'data':{}}
+    for item in Conversation.objects.all():
+        context['data'][item.question] = item.responses
+
+    #return JsonResponse(context)
+    return render(request, 'ttio/model.html', context)
 
 #it should also maybe eavesdrop? First thing we want it to do is converse.
 #the conversations it's eavesdropping on would be going through socket.io

@@ -8,5 +8,6 @@ urlpatterns = [
     url(r'^conversation', conversation_VC, name="conversation"),
     url(r'^punish', punish, name="punish"),
     url(r'^reward', reward, name="reward"),
+    url(r'^model', model, name="model"),
     url(r'^$', index, name="index"),
 ]

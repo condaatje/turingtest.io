@@ -14,6 +14,5 @@ from django.contrib.postgres.fields import JSONField
 
 #Dumb conversation model: consists only of a question and a response. Independent.
 class Conversation(models.Model):
-    question = models.CharField(max_length=255)
+    question = models.TextField()
     responses = JSONField()
-    
