@@ -4,6 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var request = require('request');
 var bodyParser = require('body-parser')
+var helpers = require('./helpers')
 
 
 app.engine('html', require('ejs').renderFile);
@@ -11,22 +12,19 @@ app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
 
 app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
     res.render('index');
 });
 
-app.get('/chat', function(req, res) {
-    console.log(req.params)
-    res.render('chat');
-});
-
 app.post('/chat', function(req, res) {
     var namei = req.body.logalog
     res.locals.name = namei
-    
+
     res.render('chat', {
         name: namei,
     });
@@ -39,81 +37,65 @@ http.listen(3000, function() {
 //TODO I'm sure there's some better way to do this but...we're kinda hacking
 //probably with redis
 var rooms = {
-    "human-human": {},
+    "human-human": {}, //TODO how to deal with waiting ppl?
     "human-machine": {},
     "machine-human": {},
 };
 
+var users = {
+    "user": {
+        "room_id": "id",
+        "role": "inquisitor"
+    }
+}
+
+//again, super not ok. quick hack only for balancing matchmaking.
+//TODO make a full, clean matchmaker
+var inquisitors = 0;
+var subjects = 0;
+
 
 io.on('connection', function(socket) {
-    
-    socket.on('client_chat', function(msg) {
-        
-        console.log(msg);
-        io.emit('display_message', msg); //make sure the actual message shows up on the screen
 
-        //check if it's a special message
-        if (msg == "/human") {
-            io.emit('display_message', "Bruh I'm not human");
-            //TODO reward
-            request({
-                url: 'http://turingtest.io/api/reward', //URL to hit
-                qs: {
-                    user: 'TODO user or session',
-                    time: +new Date()
-                },
-                body: "TODO reward info?"
-            });
-            
-        } else if (msg == "/machine") {
-            io.emit('display_message', "OI! You think I'm a machine??");
-            //TODO punish
-            request({
-                url: 'http://turingtest.io/api/punish', //URL to hit
-                qs: {
-                    user: 'TODO user or session',
-                    time: +new Date()
-                },
-                body: "TODO punishment info?"
-            });
+    socket.on('Inquisitor', function(data) {
+
+        // console.log(data);
+        io.sockets.in(data.room).emit('display_message', helpers.message(data.person, data.role, data.message));
+
+        //this is going to tell the api to update its beliefs
+        if (helpers.handle_special(data, io)) {
+            //it was a special message, end the game.
+            console.log("test");
+            io.sockets.in(data.room).emit('display_message', "Bruh I'm not human");
         } else {
-
-            //help from http://blog.modulus.io/node.js-tutorial-how-to-use-request-module
-            request({
-                url: 'http://turingtest.io/api/conversation', //URL to hit
-                qs: {
-                    user: 'TODO user or session',
-                    time: +new Date()
-                },
-                body: msg['message']
-            }, function(error, response, body) {
-                if (error) {
-                    console.log("error: " + error);
-                    io.emit('error', error);
-                }
-                else {
-                    console.log(response.statusCode, body);
-
-                    try {
-                        var data = JSON.parse(body);
-                        var item = {
-                            'person': 'Alan',
-                            'message': data["response"]
-                        }
-                        io.emit('display_message', item);
-                    } catch (err) {
-                        //TODO smoother error handling
-                        io.emit('error', body);
-                    }
-                }
+            //normal operation with the existing model
+            helpers.get_reply(data, function(err, msg) {
+                io.sockets.in(data.room).emit('display_message', msg);
             });
         }
     });
-    
-    
-    socket.on('request_room', function(cookie) {
-        console.log('joining room', cookie);
-        //socket.join(room);
+
+    //MARK - this is where we assign people to rooms/roles.
+    //kind of a balancer.
+    socket.on('request_room', function(room_name) {
+        //TODO won't work with person-to-person chat yet.
+        //I think the best way to do matchmaking is see if there's anyone else online,
+        //and then if there is wait for them to finish their conversation then match up.
+        socket.join(room_name);
+
+        if (inquisitors > subjects) {
+            io.sockets.in(room_name).emit("assign_" + room_name, {
+                role: "Subject",
+                room_name: room_name
+            });
+            subjects++;
+        } else {
+            io.sockets.in(room_name).emit("assign_" + room_name, {
+                role: "Inquisitor",
+                room_name: room_name
+            });
+            inquisitors++;
+        }
     });
 
     socket.on('send message', function(data) {
@@ -122,8 +104,13 @@ io.on('connection', function(socket) {
             message: data.message
         });
     });
-    
+
+    //This is really good for unique info etc.
+    //console.log(io.sockets.connected)
+
 });
+
+
 
 
 
@@ -135,3 +122,7 @@ io.on('connection', function(socket) {
 //http://stackoverflow.com/questions/30497245/expressjs-error-body-parser-deprecated
 //http://stackoverflow.com/questions/14093736/i-cant-get-post-data-when-i-use-express
 //http://stackoverflow.com/questions/23595282/error-no-default-engine-was-specified-and-no-extension-was-provided
+
+
+
+

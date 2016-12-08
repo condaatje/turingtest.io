@@ -25,15 +25,12 @@ NLP
 
 Time delay between question and response (could be another feature in the vector)
 
+Matchmaker
 
 
 Not essential for Final Project scope:
 ================================
 Clean up system - multi-server w/ dns-level apps for api etc.
-
-Feature-complete chat (right now it's user-trusting)
-    - Sessions
-    - Usernames?
 
 Https?
 
