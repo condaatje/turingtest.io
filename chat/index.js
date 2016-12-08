@@ -3,8 +3,8 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var request = require('request');
-var bodyParser = require('body-parser')
-var helpers = require('./helpers')
+var bodyParser = require('body-parser');
+var model = require('./model');
 
 
 app.engine('html', require('ejs').renderFile);
@@ -22,8 +22,8 @@ app.get('/', function(req, res) {
 });
 
 app.post('/chat', function(req, res) {
-    var namei = req.body.logalog
-    res.locals.name = namei
+    var namei = req.body.logalog;
+    res.locals.name = namei;
 
     res.render('chat', {
         name: namei,
@@ -47,7 +47,7 @@ var users = {
         "room_id": "id",
         "role": "inquisitor"
     }
-}
+};
 
 //again, super not ok. quick hack only for balancing matchmaking.
 //TODO make a full, clean matchmaker
@@ -55,24 +55,48 @@ var inquisitors = 0;
 var subjects = 0;
 
 
+//For now we're just doing man-machine interactions.
 io.on('connection', function(socket) {
 
     socket.on('Inquisitor', function(data) {
 
-        // console.log(data);
-        io.sockets.in(data.room).emit('display_message', helpers.message(data.person, data.role, data.message));
+        io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript));
 
         //this is going to tell the api to update its beliefs
-        if (helpers.handle_special(data, io)) {
+        if (model.handle_special(data, io)) {
             //it was a special message, end the game.
-            console.log("test");
-            io.sockets.in(data.room).emit('display_message', "Bruh I'm not human");
+            console.log("Handling special");
+            io.sockets.in(data.room).emit('end_game', "Your opponent was TODO (man or machine)");
         } else {
             //normal operation with the existing model
-            helpers.get_reply(data, function(err, msg) {
-                io.sockets.in(data.room).emit('display_message', msg);
+            model.get_reply(data, function(status, msg) {
+                if (status == "success") {
+                    io.sockets.in(data.room).emit('display_message', msg);
+                } else {
+                    console.log("Error came from the api: " + status + msg);
+                }
             });
         }
+    });
+
+
+    socket.on('Subject', function(data) {
+        io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript));
+
+        //this is going to tell the api to update its beliefs
+        //TODO how do we want Alan to terminate the game?
+        //For now we should have like 5 questions per session?
+        //Then just have it say that he guessed you were a human
+        //(which will always be right for now)
+        model.reward(data);
+
+        model.get_question(data, function(status, msg) {
+            if (status == "success") {
+                io.sockets.in(data.room).emit('display_message', msg);
+            } else {
+                console.log("Error came from the api: " + status + msg);
+            }
+        });
     });
 
     //MARK - this is where we assign people to rooms/roles.
@@ -98,12 +122,7 @@ io.on('connection', function(socket) {
         }
     });
 
-    socket.on('send message', function(data) {
-        console.log('sending room post', data.room);
-        socket.broadcast.to(data.room).emit('conversation private post', {
-            message: data.message
-        });
-    });
+
 
     //This is really good for unique info etc.
     //console.log(io.sockets.connected)
@@ -115,14 +134,8 @@ io.on('connection', function(socket) {
 
 
 
-
-
 //http://stackoverflow.com/questions/6873607/socket-io-rooms-difference-between-broadcast-to-and-sockets-in
 //http://stackoverflow.com/questions/23619015/creating-a-private-chat-between-a-key-using-a-node-js-and-socket-io
 //http://stackoverflow.com/questions/30497245/expressjs-error-body-parser-deprecated
 //http://stackoverflow.com/questions/14093736/i-cant-get-post-data-when-i-use-express
 //http://stackoverflow.com/questions/23595282/error-no-default-engine-was-specified-and-no-extension-was-provided
-
-
-
-

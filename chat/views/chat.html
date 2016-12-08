@@ -52,7 +52,7 @@
         var role = null;
         var name = "<%= name %>";
         socket.emit('request_room', name);
-        
+        var transcript = [];
         
         var room_name = null;
         //TODO assign_Name convention - figure out how to abstract.
@@ -64,17 +64,19 @@
             }
             
             role = msg.role;
-            room_name = msg.room_name
+            room_name = msg.room_name;
         });
         
         $('form').submit(function() {
+            // transcript.push($('#m').val())
             var data = {
                 'person': "<%= name %>",
                 'role': role,
                 'message': $('#m').val(),
-                'room': room_name
+                'room': room_name, //TODO do we need this?
+                'transcript': transcript  //TODO this should be cleaner?
             };
-            
+            console.log(transcript);
             socket.emit(role, data);
             $('#m').val('');
             return false;
@@ -87,13 +89,23 @@
             <strong>" + data.role + " (" + data.person + ")" + ": </strong>\
             " + data.message + "</span>\
             </div>");
-            
+            transcript.push(data.message); //TODO should we do all this transcript stuff on the server side?
+            console.log(transcript);
             $('#scroller').scrollTop($('#messages')[0].scrollHeight);
             //http://stackoverflow.com/questions/18614301/keep-overflow-div-scrolled-to-bottom-unless-user-scrolls-up
         });
+        
+        socket.on('end_game', function(msg) {
+            $('#messages').append("<div class='row message-bubble'><p class='text-muted'>Game Ended:</p><span>" + msg + "</span></div>");
+            $("#m").remove();
+            $('#scroller').scrollTop($('#messages')[0].scrollHeight);
+        });
+        
         socket.on('error', function(msg) {
             $('#messages').append("<div class='row message-bubble'><p class='text-muted'>ERROR:</p><span>" + msg + "</span></div>");
         });
+        
+        
     </script>
 </body>
 

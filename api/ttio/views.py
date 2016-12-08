@@ -3,6 +3,9 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from ttio.models import Conversation
 from helpers import normalize, best_response
+import json
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count, Min, Sum, Avg, Max, F
 
 # Create your views here.
 def index(request):
@@ -14,40 +17,65 @@ def about(request):
     return render(request, 'ttio/about.html', context)
 
 
-def conversation_VC(request):
-    #TODO: this takes in a sentence (from the user),
-    #and returns a sentence (from Alan)
-    
-    #TODO will need some validation and stuff? otherwise can get random stuff/errors 
+#Someone has asked Alan something. Return his response.
+def response(request):
+    #TODO will we need some validation? otherwise can get random stuff/errors 
     #if we have the wrong stuff submitted, which would mess up the model.
     
-    conversation = Conversation.objects.filter(question = str(request.body))
-    
-    #print request.GET['user']
-    
-    if conversation.exists():
-        candidates = dict(conversation[0].responses) #TODO let's make this not an array?
+    try:
+        conversation = Conversation.objects.get(question = str(request.body))
+        candidates = dict(conversation.responses)
         best = best_response(candidates)
         return JsonResponse({'response': best})  
-        
-    else:
+    except ObjectDoesNotExist:
         # This is a new question. Let's start a new model for it.
         default = {"I'm sorry, I don't quite understand.": 1.0}
         Conversation.objects.create(question=str(request.body), responses = default)
         
-        return JsonResponse({'response':"I'm sorry, I don't quite understand."})    
+        return JsonResponse({'response': "I'm sorry, I don't quite understand."})    
+
+
+#Alan must ask something - what does he want to know?
+#takes in a transcript and returns a question - continues the conversation.
+def question(request):
+    transcript = json.loads(request.body)
+    print transcript
+    conversations = Conversation.objects.all()
+    
+    #TODO get this working
+    #conversation = Conversation.objects.annotate(max_fail=Max('failures')).filter(failures=F('max_fail'))
+    
+    toughest = None
+    most_fails = -float('inf')
+    for conversation in conversations:
+        if conversation.failures > most_fails and not conversation.question in transcript: # and not in transcript already
+            toughest = conversation
+            most_fails = conversation.failures
+    
+    #TODO handle having no remaining questions
+    return JsonResponse({'response': toughest.question})
 
 
 def punish(request):
-    print "Punish Him!", request.body
-    
+    #TODO verification - this could get real strange if some other data comes through here
+    transcript = json.loads(request.body)
+    try:
+        conversation = Conversation.objects.get(question = transcript[-2]) #TODO not the best at all
+        conversation.failures = F('failures') + 1
+        conversation.save()
+        
+    except ObjectDoesNotExist:
+        print "shouldn't happen"
+        
     return HttpResponse(status=201)
     
 
+
 def reward(request):
-    print "Reward view controller", request.body
+    transcript = json.loads(request.body)
     
     return HttpResponse(status=201)
+
 
 
 def model(request):
@@ -55,7 +83,12 @@ def model(request):
     # with display code and all that but not the end of the world
     context = {'data':{}}
     for item in Conversation.objects.all():
-        context['data'][item.question] = item.responses
+        # context['data'][item.question] = item.responses
+        
+        context['data'][item.question] = {
+            'responses': item.responses,
+            'failures': item.failures
+        }
 
     #return JsonResponse(context)
     return render(request, 'ttio/model.html', context)
@@ -70,6 +103,20 @@ def model(request):
 #if turing testing
     #send transcript to model, get response sentence back
     #return
+
+
+
+
+
+
+
+
+
+
+
+
+#http://stackoverflow.com/questions/4353147/whats-the-best-way-to-handle-djangos-objects-get
+#http://stackoverflow.com/questions/9838264/django-record-with-max-element
 
 
 

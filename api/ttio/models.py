@@ -16,3 +16,7 @@ from django.contrib.postgres.fields import JSONField
 class Conversation(models.Model):
     question = models.TextField()
     responses = JSONField()
+    failures = models.IntegerField(default=1) #TODO do we like this being 1 default failure?
+        # should we also consider having this be a fail rate instead of a counter?
+        # so percent failure is what leads to a question getting 
+        # sent to the humans to answer (means that new questions don't get left behind)
