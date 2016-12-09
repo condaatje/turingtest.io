@@ -177,8 +177,21 @@ def model(request):
     #send transcript to model, get response sentence back
     #return
 
-
-
+from pycorenlp import StanfordCoreNLP
+def nlp(request):
+    #TODO setup nlp server
+    nlp = StanfordCoreNLP('http://localhost:9000')
+    
+    text = (
+        'Pusheen and Smitha walked along the beach. '
+        'Pusheen wanted to surf, but fell off the surfboard.')
+  
+    output = nlp.annotate(text, properties={
+    'annotators': 'tokenize,ssplit,pos,depparse,parse',
+    'outputFormat': 'json'
+    })
+    
+    return JsonResponse({'nlp': output})
 
 
 
