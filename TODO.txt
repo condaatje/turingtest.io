@@ -6,10 +6,6 @@ Model (the big deal)
     - Neural Net
     - 'Eavesdropping' learning method
 
-Training:
-    - When someone guesses 'machine' correctly, punish.
-    - When someone guesses 'human' incorrectly, reward.
-
 Explore vs. Exploit:
     - Add some stochasticity in responses/behavior to make sure we're always learning
 
@@ -26,6 +22,8 @@ NLP
 Time delay between question and response (could be another feature in the vector)
 
 Matchmaker
+
+Comment the crap out of it/super cleanup & abstraction.
 
 
 Not essential for Final Project scope:
