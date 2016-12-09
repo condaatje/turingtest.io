@@ -59,7 +59,7 @@ var subjects = 0;
 io.on('connection', function(socket) {
 
     socket.on('Inquisitor', function(data) {
-
+        data.transcript.unshift(data.message);
         io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript));
 
         //this is going to tell the api to update its beliefs
@@ -69,11 +69,13 @@ io.on('connection', function(socket) {
             io.sockets.in(data.room).emit('end_game', "Your opponent was TODO (man or machine)");
         } else {
             //normal operation with the existing model
-            model.get_reply(data, function(status, msg) {
+            model.get_reply(data, function(status, msg) {//msg is straight response text
                 if (status == "success") {
-                    io.sockets.in(data.room).emit('display_message', msg);
+                    data.transcript.unshift(msg);
+                    var response = model.message("Alan", "Subject", msg, data.transcript);
+                    io.sockets.in(data.room).emit('display_message', response);
                 } else {
-                    console.log("Error came from the api: " + status + msg);
+                    console.log("Error in getting reply: " + status + msg);
                 }
             });
         }
@@ -81,6 +83,7 @@ io.on('connection', function(socket) {
 
 
     socket.on('Subject', function(data) {
+        data.transcript.unshift(data.message);
         io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript));
 
         //this is going to tell the api to update its beliefs
@@ -92,7 +95,9 @@ io.on('connection', function(socket) {
 
         model.get_question(data, function(status, msg) {
             if (status == "success") {
-                io.sockets.in(data.room).emit('display_message', msg);
+                data.transcript.unshift(msg);
+                var response = model.message("Alan", "Inquisitor", msg, data.transcript);
+                io.sockets.in(data.room).emit('display_message', response);
             } else {
                 console.log("Error came from the api: " + status + msg);
             }
@@ -113,6 +118,26 @@ io.on('connection', function(socket) {
                 room_name: room_name
             });
             subjects++;
+
+            var data = {
+                'person': room_name,
+                'role': "Subject",
+                'message': "INITIALIZE", //TODO I guess this works?
+                'room': room_name, 
+                'transcript': []
+            };
+
+            // As the inquisitor, Alan should start the conversation
+            model.get_question(data, function(status, msg) {
+                if (status == "success") {
+                    data.transcript.unshift(msg);
+                    var response = model.message("Alan", "Inquisitor", msg, data.transcript);
+                    io.sockets.in(data.room).emit('display_message', response);
+                } else {
+                    console.log("Error came from the api: " + status + msg);
+                }
+            });
+
         } else {
             io.sockets.in(room_name).emit("assign_" + room_name, {
                 role: "Inquisitor",

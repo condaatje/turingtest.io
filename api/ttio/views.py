@@ -21,16 +21,20 @@ def about(request):
 def response(request):
     #TODO will we need some validation? otherwise can get random stuff/errors 
     #if we have the wrong stuff submitted, which would mess up the model.
+    transcript = json.loads(request.body)
+    question = transcript[0] #transcript is backwards - how deep in the convo do you want to go back?
+    
+    print "question: " + str(question)
     
     try:
-        conversation = Conversation.objects.get(question = str(request.body))
+        conversation = Conversation.objects.get(question = question)
         candidates = dict(conversation.responses)
         best = best_response(candidates)
         return JsonResponse({'response': best})  
     except ObjectDoesNotExist:
         # This is a new question. Let's start a new model for it.
         default = {"I'm sorry, I don't quite understand.": 1.0}
-        Conversation.objects.create(question=str(request.body), responses = default)
+        Conversation.objects.create(question=question, responses = default)
         
         return JsonResponse({'response': "I'm sorry, I don't quite understand."})    
 
@@ -39,7 +43,6 @@ def response(request):
 #takes in a transcript and returns a question - continues the conversation.
 def question(request):
     transcript = json.loads(request.body)
-    print transcript
     conversations = Conversation.objects.all()
     
     #TODO get this working
@@ -52,15 +55,17 @@ def question(request):
             toughest = conversation
             most_fails = conversation.failures
     
-    #TODO handle having no remaining questions
-    return JsonResponse({'response': toughest.question})
+    if toughest == None:
+        return JsonResponse({'response': "/human"})
+    else:
+        return JsonResponse({'response': toughest.question})
 
 
 def punish(request):
     #TODO verification - this could get real strange if some other data comes through here
     transcript = json.loads(request.body)
     try:
-        conversation = Conversation.objects.get(question = transcript[-2]) #TODO not the best at all
+        conversation = Conversation.objects.get(question = transcript[2]) #TODO not the best at all
         conversation.failures = F('failures') + 1
         conversation.save()
         
@@ -73,9 +78,29 @@ def punish(request):
 
 def reward(request):
     transcript = json.loads(request.body)
+    question = transcript[1]
+    response = transcript[0]
     
-    return HttpResponse(status=201)
+    print "human response to \"" + transcript[1] + "\" is: \"" + transcript[0] + "\""
+    
+    try:
+        # we've seen this question before,
+        # and this new information updates our beliefs about how to respond to it
+        conversation = Conversation.objects.get(question = question)
+        if response in conversation.responses:
+            weight = conversation.responses[response]
+            conversation.responses[response] = weight + 1.0 #TODO ML equation. Times alpha and all that.
+        else:
+            conversation.responses[response] = 1.0
+        conversation.save()
+        
+        
+    except ObjectDoesNotExist:
+        # This is a new question. Let's start a new model for it.
+        good_response = {response: 1.0}
+        Conversation.objects.create(question=question, responses = good_response)
 
+    return HttpResponse(status=201)
 
 
 def model(request):

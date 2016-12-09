@@ -4,37 +4,16 @@ var request = require('request');
 module.exports = {
     handle_special: function(data) {
         if (data.message == "/human") {
-
-            //TODO reward
-            request({
-                url: 'http://turingtest.io/api/reward', //URL to hit
-                qs: {
-                    user: 'TODO user or session',
-                    time: +new Date()
-                },
-                body: "TODO reward info?"
-            });
+            module.exports.reward(data);
             return true;
         } else if (data.message == "/machine") {
-            request({
-                url: 'http://turingtest.io/api/punish', //URL to hit
-                qs: {
-                    user: 'TODO user or session',
-                    time: +new Date(),
-                },
-                //method: "POST",//TODO: forbidden because csrf
-                headers: { //We can define headers too
-                    'content-type': 'application/json',
-                },
-                body: JSON.stringify(data.transcript)
-            });
+            module.exports.punish(data);
             return true;
         }
         return false;
     },
+    
     message: function(person, role, message, transcript) {
-        //console.log(transcript);
-        
         return {
             'person': person,
             'role': role,
@@ -42,6 +21,7 @@ module.exports = {
             'transcript': transcript
         };
     },
+    
     get_reply: function(data, callback) {
         request({
             //TODO abstract into a secure settings file?
@@ -50,18 +30,19 @@ module.exports = {
                 user: 'TODO user or session',
                 time: +new Date(),
             },
-            body: data.message
+            body: JSON.stringify(data.transcript)
         }, function(error, response, body) {
             if (error) {callback("failure", error);}
             else {
                 //console.log(response.statusCode, body);
                 try {
                     var dat = JSON.parse(body);
-                    callback("success", module.exports.message('Alan', "Subject", dat["response"]));
+                    callback("success", dat["response"]);
                 } catch (err) {callback("failure", err);}
             }
         });
     },
+    
     get_question: function(data, callback) {
         request({
             //TODO abstract into a secure settings file?
@@ -79,15 +60,16 @@ module.exports = {
                 //console.log(response.statusCode, body);
                 try {
                     var dat = JSON.parse(body);
-                    callback("success", module.exports.message('Alan', "Inquisitor", dat["response"]));
+                    callback("success", dat["response"]);
                 } catch (err) {
                     //TODO smoother error handling
                     callback("failure", err);
-                    console.log("Error in api - not JSON: " + err)
+                    console.log("Error in api - not JSON: " + err);
                 }
             }
         });
     },
+    
     reward: function(data) {
         request({
             url: 'http://turingtest.io/api/reward', //URL to hit
@@ -102,6 +84,7 @@ module.exports = {
             }
         });
     },
+    
     punish: function(data) {
         request({
             url: 'http://turingtest.io/api/punish',
