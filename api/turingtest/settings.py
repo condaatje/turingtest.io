@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 	'bootstrap3',
 	'ttio',
 ]
@@ -129,3 +130,5 @@ STATIC_URL = '/static/'
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
+#Custom settings
+LEARNING_RATE = 0.5

@@ -11,13 +11,22 @@ def normalize(dictionary):
         dictionary[response] = goodness / total_weight
 
 
+
+# This is the incoming structure
+# default = {
+#             "I'm sorry, I don't quite understand." : {
+#                 "frequency": 1.0,
+#                 "failures": 0.0,   
+#             }
+#         }
 def best_response(dictionary):
     best = "bad best"
-    best_num = -float('inf')
+    best_num = float('inf')
 
-    for response, goodness in dictionary.iteritems():
-            if goodness > best_num:
-                best = response
-                best_num = goodness
+    for response, data in dictionary.iteritems():
+        percent_fail = data["failures"] / data["frequency"]
+        if percent_fail < best_num:
+            best = response
+            best_num = percent_fail
     
     return best

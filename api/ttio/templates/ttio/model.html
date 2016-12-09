@@ -1,5 +1,7 @@
 {% extends 'ttio/base.html' %}
 {% load static %}
+{% load ttio_extras %}
+{% load humanize %}
 
 {% block extra_css %}
 
@@ -21,20 +23,22 @@
 			<caption class="text-center" style="border: inherit; background-color: lightgrey;">
 				<strong>Question: </strong> "{{question}}"
 				<br/>
-				<strong>Failures: </strong>{{info.failures}}
+				<strong>Failure Percentage: </strong> {{ info.failures|percent:info.frequency|floatformat:2|intcomma }}%
 			</caption>
 			<thead>
 				<tr>
 					<th class="col-sm-11">Response</th>
-					<th class="col-sm-1 text-right">Weight</th>
+					<th class="col-sm-1 text-right">Percent Failure</th>
 				</tr>
 			</thead>
 			<tbody>
-				{% for response, weight in info.responses.items %}
+				{% for response, props in info.responses.items %}
 				<tr>
 					<!--http://stackoverflow.com/questions/11481499/django-iterate-number-in-for-loop-of-a-template-->
 					<td>"{{response}}"</td> <!-- response -->
-					<td class="text-right">{{weight}}</td>
+					
+					<td class="text-right">
+						{{ props.failures|percent:props.frequency|floatformat:2|intcomma }}%</td>
 				</tr>
 				{% endfor %}
 			</tbody>
@@ -53,3 +57,4 @@
 </body>
 {% endblock %}
 
+<!--http://stackoverflow.com/questions/346467/format-numbers-in-django-templates-->

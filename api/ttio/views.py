@@ -28,12 +28,28 @@ def response(request):
     
     try:
         conversation = Conversation.objects.get(question = question)
-        candidates = dict(conversation.responses)
+        candidates = conversation.responses
         best = best_response(candidates)
-        return JsonResponse({'response': best})  
+        
+        #update frequency for the response and the question
+        conversation.frequency = conversation.frequency + 1
+        frequency = conversation.responses[best]["frequency"]
+        failures = conversation.responses[best]["failures"]
+        conversation.responses[best] = {
+            "frequency": frequency + 1.0,
+            "failures": failures,
+        }
+        conversation.save()
+        
+        return JsonResponse({'response': best})
     except ObjectDoesNotExist:
         # This is a new question. Let's start a new model for it.
-        default = {"I'm sorry, I don't quite understand.": 1.0}
+        default = {
+            "I'm sorry, I don't quite understand." : {
+                "frequency": 1.0,
+                "failures": 0.0,   
+            }
+        }
         Conversation.objects.create(question=question, responses = default)
         
         return JsonResponse({'response': "I'm sorry, I don't quite understand."})    
@@ -49,11 +65,14 @@ def question(request):
     #conversation = Conversation.objects.annotate(max_fail=Max('failures')).filter(failures=F('max_fail'))
     
     toughest = None
-    most_fails = -float('inf')
+    most_fail = -float('inf')
     for conversation in conversations:
-        if conversation.failures > most_fails and not conversation.question in transcript: # and not in transcript already
+        percent_fail = float(conversation.failures)/float(conversation.frequency)
+        #Threshold is 50% failure - if we are more likely to fail than not, we need help on the question.
+        #TODO abstract out the threshold
+        if percent_fail > max(most_fail, 0.50) and not conversation.question in transcript:
             toughest = conversation
-            most_fails = conversation.failures
+            most_fail = percent_fail
     
     if toughest == None:
         return JsonResponse({'response': "/human"})
@@ -64,9 +83,28 @@ def question(request):
 def punish(request):
     #TODO verification - this could get real strange if some other data comes through here
     transcript = json.loads(request.body)
+    print("punish" + str(transcript))
+    
+    response = transcript[1] #the one before /machine
+    question = transcript[2]
+    
     try:
-        conversation = Conversation.objects.get(question = transcript[2]) #TODO not the best at all
+        conversation = Conversation.objects.get(question = question) #TODO not the best at all
         conversation.failures = F('failures') + 1
+        
+        if response in conversation.responses:
+            frequency = conversation.responses[response]["frequency"]
+            failures = conversation.responses[response]["failures"]
+            conversation.responses[response] = {
+                "frequency": frequency + 1.0,
+                "failures": failures + 1.0,
+            }
+        else:
+            conversation.responses[response] = {
+                "frequency": 1.0,
+                "failures": 1.0,
+            }
+        
         conversation.save()
         
     except ObjectDoesNotExist:
@@ -88,16 +126,27 @@ def reward(request):
         # and this new information updates our beliefs about how to respond to it
         conversation = Conversation.objects.get(question = question)
         if response in conversation.responses:
-            weight = conversation.responses[response]
-            conversation.responses[response] = weight + 1.0 #TODO ML equation. Times alpha and all that.
+            frequency = conversation.responses[response]["frequency"]
+            failures = conversation.responses[response]["failures"]
+            conversation.responses[response] = {
+                "frequency": frequency + 1.0, #TODO this is technically a double freq
+                "failures": failures,
+            }
         else:
-            conversation.responses[response] = 1.0
+            conversation.responses[response] = {
+                "frequency": 1.0,
+                "failures": 0.0,
+            }
         conversation.save()
-        
         
     except ObjectDoesNotExist:
         # This is a new question. Let's start a new model for it.
-        good_response = {response: 1.0}
+        good_response = {
+            response: {
+                "frequency": 1.0,
+                "failures": 0.0,
+            }
+        }
         Conversation.objects.create(question=question, responses = good_response)
 
     return HttpResponse(status=201)
@@ -108,11 +157,10 @@ def model(request):
     # with display code and all that but not the end of the world
     context = {'data':{}}
     for item in Conversation.objects.all():
-        # context['data'][item.question] = item.responses
-        
         context['data'][item.question] = {
             'responses': item.responses,
-            'failures': item.failures
+            'failures': float(item.failures),
+            'frequency': float(item.frequency),
         }
 
     #return JsonResponse(context)
