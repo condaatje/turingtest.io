@@ -6,6 +6,9 @@ Model (the big deal)
     - Neural Net
     - 'Eavesdropping' learning method
 
+More Memory for NLP guy.
+Resize server - storage and RAM.
+
 Explore vs. Exploit:
     - Add some stochasticity in responses/behavior to make sure we're always learning
 
