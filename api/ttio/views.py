@@ -2,10 +2,14 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from ttio.models import Conversation
-from helpers import normalize, best_response
+from helpers import *
 import json
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Min, Sum, Avg, Max, F
+from pycorenlp import StanfordCoreNLP
+from sklearn.feature_extraction.text import TfidfVectorizer
+import nltk, string
+
 
 # Create your views here.
 def index(request):
@@ -43,16 +47,25 @@ def response(request):
         
         return JsonResponse({'response': best})
     except ObjectDoesNotExist:
-        # This is a new question. Let's start a new model for it.
-        default = {
-            "I'm sorry, I don't quite understand." : {
-                "frequency": 1.0,
-                "failures": 0.0,   
-            }
-        }
-        Conversation.objects.create(question=question, responses = default)
         
-        return JsonResponse({'response': "I'm sorry, I don't quite understand."})    
+        # use the most similar conversation
+        conversations = Conversation.objects.all() #TODO just how bad is this?
+        
+        best_convo = None
+        best_similarity = -1
+        for conversation in conversations:
+            q = conversation.question
+            sim = cosine_sim(q, question)
+            if best_similarity < sim:
+                best_similarity = sim
+                best_convo = conversation
+        
+        candidates = best_convo.responses
+        best = best_response(candidates)
+        
+        Conversation.objects.create(question=question, responses = best_convo.responses)
+        
+        return JsonResponse({'response': best})    
 
 
 #Alan must ask something - what does he want to know?
@@ -68,17 +81,29 @@ def question(request):
     most_fail = -float('inf')
     for conversation in conversations:
         percent_fail = float(conversation.failures)/float(conversation.frequency)
-        #Threshold is 50% failure - if we are more likely to fail than not, we need help on the question.
+            #TODO could add a couple ghost failures to balance the weighting?
+        
+        #Threshold is 33% failure - if this question leads to failure a lot, we need to get some help on it.
         #TODO abstract out the threshold
-        if percent_fail > max(most_fail, 0.50) and not conversation.question in transcript:
+        if percent_fail > max(most_fail, 0.33) and not conversation.question in transcript:
             toughest = conversation
             most_fail = percent_fail
+    
+    
     
     if toughest == None:
         return JsonResponse({'response': "/human"})
     else:
+        #reduce its failure percentage now that we've got some human convo
+        toughest.frequency = toughest.frequency + 1
+        toughest.save()
         return JsonResponse({'response': toughest.question})
 
+def delete(request):
+    transcript = json.loads(request.body)
+    print transcript
+    
+    return HttpResponse(status=201)
 
 def punish(request):
     #TODO verification - this could get real strange if some other data comes through here
@@ -177,60 +202,14 @@ def model(request):
     #send transcript to model, get response sentence back
     #return
 
-from pycorenlp import StanfordCoreNLP
 def nlp(request):
     #TODO setup nlp server
     nlp = StanfordCoreNLP('http://localhost:9000')
-  
-    text = (
-        'Pusheen and Smitha walked along the beach. '
-        'Pusheen wanted to surf, but fell off the surfboard.')
-  
-    obj1 = nlp.tokensregex(text, pattern='/Pusheen|Smitha/', filter=False)
-    print obj1
-    # expected:
-    # {
-    #     u'sentences': [
-    #         {
-    #             u'1': {
-    #                 u'text': u'Smitha', u'begin': 2, u'end': 3
-    #             },
-    #             u'0': {
-    #                 u'text': u'Pusheen', u'begin': 0, u'end': 1
-    #             }, u'length': 2
-    #         },
-    #         {
-    #             u'0': {
-    #                 u'text': u'Pusheen', u'begin': 0, u'end': 1
-    #             }, u'length': 1
-    #         }
-    #     ]
-    # }
-    
-    obj2 = nlp.semgrex(text, pattern='{tag: VBD}', filter=False)
-    # {u'sentences': [
-    #     {
-    #         u'0': {
-    #         u'text': u'walked', u'begin': 3, u'end': 4}, u'length': 1
-    #     },
-    #     {
-    #         u'1': {
-    #             u'text': u'fell', u'begin': 6, u'end': 7
-    #         },
-    #         u'0': {
-    #             u'text': u'wanted', u'begin': 1, u'end': 2
-                
-    #         }, u'length': 2
-    #     }
-    # ]}
     
     
-    # output = nlp.annotate(text, properties={
-    # 'annotators': 'tokenize,ssplit,pos,depparse,parse',
-    # 'outputFormat': 'json'
-    # })
+    print "similarities: ", cosine_sim("What Up boss?", "what's up boss?")
     
-    return JsonResponse({'nlp': obj1})
+    return JsonResponse({})
 
 
 
@@ -240,6 +219,8 @@ def nlp(request):
 
 
 
+
+#http://stackoverflow.com/questions/8897593/similarity-between-two-text-documents
 #http://stackoverflow.com/questions/4353147/whats-the-best-way-to-handle-djangos-objects-get
 #http://stackoverflow.com/questions/9838264/django-record-with-max-element
 

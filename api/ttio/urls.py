@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^punish', punish, name="punish"),
     url(r'^reward', reward, name="reward"),
     url(r'^model', model, name="model"),
+    url(r'^delete', delete, name="delete"),
     url(r'^nlp', nlp, name="nlp"),
     url(r'^$', index, name="index"),
 ]

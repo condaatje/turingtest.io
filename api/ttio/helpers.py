@@ -1,14 +1,31 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
+import nltk, string
 
-
-
-def normalize(dictionary):
-    total_weight = 0.0
+stemmer = nltk.stem.porter.PorterStemmer()
+remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
     
-    for goodness in l.values():
-        total_weight += goodness
+def stem_tokens(tokens):
+    return [stemmer.stem(item) for item in tokens]
+
+'''remove punctuation, lowercase, stem'''
+def normalize(text):
+    return stem_tokens(nltk.word_tokenize(text.lower().translate(remove_punctuation_map)))
+
+vectorizer = TfidfVectorizer(tokenizer=normalize)#, stop_words='english') - I didn't like 'who are you?' being the same as 'how are you?'    
+
+def cosine_sim(text1, text2):
+    tfidf = vectorizer.fit_transform([text1, text2])
+    return ((tfidf * tfidf.T).A)[0,1]
+
+
+# def normalize(dictionary):
+#     total_weight = 0.0
     
-    for response, goodness in l.iteritems():
-        dictionary[response] = goodness / total_weight
+#     for goodness in l.values():
+#         total_weight += goodness
+    
+#     for response, goodness in l.iteritems():
+#         dictionary[response] = goodness / total_weight
 
 
 

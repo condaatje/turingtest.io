@@ -2,21 +2,10 @@
 Essential:
 ================================
 Model (the big deal)
-    - All the ML stuff
-    - Neural Net
+    - Neural Net?
     - 'Eavesdropping' learning method
 
-More Memory for NLP guy.
-Resize server - storage and RAM.
-
-Explore vs. Exploit:
-    - Add some stochasticity in responses/behavior to make sure we're always learning
-
 NLP
-    - Going to start without any vectorization:
-        - Each new sentence/question has its own response
-        - "What's up?" is different from "What is up?"
-        - 'dumb' conversation model: every question is a new 'conversation'
     - Then move into smarter vectorization for sentences
         - Similar questions share response model
     - Then move into smarter vectorization for conversations (if possible)
@@ -27,6 +16,8 @@ Time delay between question and response (could be another feature in the vector
 Matchmaker
 
 Comment the crap out of it/super cleanup & abstraction.
+
+
 
 
 Not essential for Final Project scope:

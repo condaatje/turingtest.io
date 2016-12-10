@@ -2,12 +2,21 @@ var request = require('request');
 
 
 module.exports = {
-    handle_special: function(data) {
+    handle_guess: function(data) {
         if (data.message == "/human") {
             module.exports.reward(data);
             return true;
         } else if (data.message == "/machine") {
             module.exports.punish(data);
+            return true;
+        }
+        return false;
+    },
+    
+    handle_model_termination: function(msg) {
+        if (msg == "/human") {
+            return true;
+        } else if (msg == "/machine") {
             return true;
         }
         return false;
@@ -96,6 +105,21 @@ module.exports = {
         }, function(error, response, body) {
             if (error) {
                 console.log("error in punish api - didn't connect?: " + error);
+            }
+        });
+    },
+    
+    delete: function(data) {
+        request({
+            url: 'http://turingtest.io/api/delete',
+            qs: {
+                user: 'TODO user or session',
+                time: +new Date()
+            },
+            body: JSON.stringify(data.transcript)
+        }, function(error, response, body) {
+            if (error) {
+                console.log("error in delete api - didn't connect?: " + error);
             }
         });
     }

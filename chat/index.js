@@ -63,9 +63,9 @@ io.on('connection', function(socket) {
         io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript));
 
         //this is going to tell the api to update its beliefs
-        if (model.handle_special(data, io)) {
+        if (model.handle_guess(data)) {
             //it was a special message, end the game.
-            console.log("Handling special");
+            console.log("Handling user guess");
             io.sockets.in(data.room).emit('end_game', "Your opponent was TODO (man or machine)");
         } else {
             //normal operation with the existing model
@@ -98,6 +98,10 @@ io.on('connection', function(socket) {
                 data.transcript.unshift(msg);
                 var response = model.message("Alan", "Inquisitor", msg, data.transcript);
                 io.sockets.in(data.room).emit('display_message', response);
+                if (model.handle_model_termination(msg)) {
+                    io.sockets.in(data.room).emit('end_game', "Your opponent was TODO (man or machine)");
+                }
+                
             } else {
                 console.log("Error came from the api: " + status + msg);
             }
@@ -131,8 +135,12 @@ io.on('connection', function(socket) {
             model.get_question(data, function(status, msg) {
                 if (status == "success") {
                     data.transcript.unshift(msg);
-                    var response = model.message("Alan", "Inquisitor", msg, data.transcript);
-                    io.sockets.in(data.room).emit('display_message', response);
+                    if (model.handle_model_termination(msg)) {
+                        io.sockets.in(data.room).emit('end_game', "TODO Alan is out of questions");
+                    } else {
+                        var response = model.message("Alan", "Inquisitor", msg, data.transcript);
+                        io.sockets.in(data.room).emit('display_message', response);    
+                    }
                 } else {
                     console.log("Error came from the api: " + status + msg);
                 }
