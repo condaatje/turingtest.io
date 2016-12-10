@@ -22,12 +22,13 @@ module.exports = {
         return false;
     },
     
-    message: function(person, role, message, transcript) {
+    message: function(person, role, message, transcript, eavesdropping) {
         return {
             'person': person,
             'role': role,
             'message': message,
-            'transcript': transcript
+            'transcript': transcript,
+            'eavesdropping': eavesdropping
         };
     },
     
@@ -73,7 +74,7 @@ module.exports = {
                 } catch (err) {
                     //TODO smoother error handling
                     callback("failure", err);
-                    console.log("Error in api - not JSON: " + err);
+                    console.log("Error in question api - not JSON: " + err);
                 }
             }
         });

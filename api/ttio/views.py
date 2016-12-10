@@ -9,6 +9,7 @@ from django.db.models import Count, Min, Sum, Avg, Max, F
 from pycorenlp import StanfordCoreNLP
 from sklearn.feature_extraction.text import TfidfVectorizer
 import nltk, string
+import random
 
 
 # Create your views here.
@@ -30,6 +31,7 @@ def response(request):
     
     print "question: " + str(question)
     
+    
     try:
         conversation = Conversation.objects.get(question = question)
         candidates = conversation.responses
@@ -50,9 +52,8 @@ def response(request):
         
         # use the most similar conversation
         conversations = Conversation.objects.all() #TODO just how bad is this?
-        
-        best_convo = None
-        best_similarity = -1
+        best_convo = random.choice(conversations)
+        best_similarity = 0.1 #has to at least be a little similar. TODO abstract.
         for conversation in conversations:
             q = conversation.question
             sim = cosine_sim(q, question)
@@ -141,7 +142,7 @@ def punish(request):
 
 def reward(request):
     transcript = json.loads(request.body)
-    question = transcript[1]
+    question = transcript[1] #TODO sometimes this is out of range because the subject talks first.
     response = transcript[0]
     
     print "human response to \"" + transcript[1] + "\" is: \"" + transcript[0] + "\""
@@ -206,6 +207,7 @@ def nlp(request):
     #TODO setup nlp server
     nlp = StanfordCoreNLP('http://localhost:9000')
     
+    print cosine_sim("asl;dfjal;ksdfahsdf","a;sdjhfalkhsfakh;dfksa")    
     
     print "similarities: ", cosine_sim("What Up boss?", "what's up boss?")
     

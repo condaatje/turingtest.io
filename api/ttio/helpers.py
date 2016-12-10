@@ -18,17 +18,6 @@ def cosine_sim(text1, text2):
     return ((tfidf * tfidf.T).A)[0,1]
 
 
-# def normalize(dictionary):
-#     total_weight = 0.0
-    
-#     for goodness in l.values():
-#         total_weight += goodness
-    
-#     for response, goodness in l.iteritems():
-#         dictionary[response] = goodness / total_weight
-
-
-
 # This is the incoming structure
 # default = {
 #             "I'm sorry, I don't quite understand." : {
@@ -37,6 +26,8 @@ def cosine_sim(text1, text2):
 #             }
 #         }
 def best_response(dictionary):
+    #TODO stochasticity
+    
     best = "bad best"
     best_num = float('inf')
 

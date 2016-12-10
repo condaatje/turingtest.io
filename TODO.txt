@@ -1,27 +1,32 @@
 
 Essential:
 ================================
-Model (the big deal)
-    - Neural Net?
-    - 'Eavesdropping' learning method
+Stochasticity in responses
+    - randomly choose from responses weighted on percent success.
 
 NLP
-    - Then move into smarter vectorization for sentences
-        - Similar questions share response model
     - Then move into smarter vectorization for conversations (if possible)
         - Questions are not independent, conversations flow.
 
 Time delay between question and response (could be another feature in the vector)
 
-Matchmaker
-
 Comment the crap out of it/super cleanup & abstraction.
-
 
 
 
 Not essential for Final Project scope:
 ================================
+sentence n-grams for conversation model?
+
+Neural Net? Incorporate past few questions in conversation, not just independent
+
+Random aliases for Alan
+
+Rooms not based on name. Base on unique socket ID.
+
+deal with "asdjlkfha;as;dfa;kljsdfhaksd"
+    - right now Alan doesn't think it's similar to "asdfk;jah;dfkal;sdfasdf"
+
 Clean up system - multi-server w/ dns-level apps for api etc.
 
 Https?
@@ -30,3 +35,4 @@ Load balancer
 
 Group Chat? This should at least be in the whitepaper/final paper
     - Interesting to see how an AI could take part in a group conversation
+    - Punish if singled out, like "/machine Alan"
