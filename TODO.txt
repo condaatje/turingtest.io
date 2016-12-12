@@ -1,7 +1,7 @@
 
-Essential:
+Essential for Final Project scope:
 ================================
-Thorough comment, clean, and abstraction passses.
+√
 
 
 
@@ -10,7 +10,7 @@ Not essential for Final Project scope:
 Quick: Stochasticity in responses
     - Randomly choose from responses weighted on percent success.
     - Might violate blockhead property?
-
+Quick: Random Inquisitor/Subject choice
 Quick: Time delay between question and response (could be another feature in the vector)
 Quick: Random aliases for Alan
 Quick: Enforce question/response on the frontend (so no double questions)

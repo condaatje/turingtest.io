@@ -1,7 +1,9 @@
 var request = require('request');
 
-
+// These are all mainly the API calls.
+// This is basically the controller-side interface w/ the Model
 module.exports = {
+    //TODO abstract URLs and Strings into a secure settings file?
     handle_guess: function(data) {
         if (data.message == "/human") {
             module.exports.reward(data);
@@ -34,7 +36,6 @@ module.exports = {
     
     get_reply: function(data, callback) {
         request({
-            //TODO abstract into a secure settings file?
             url: 'http://turingtest.io/api/response', //URL to hit
             qs: {
                 user: 'TODO user or session',
@@ -55,7 +56,6 @@ module.exports = {
     
     get_question: function(data, callback) {
         request({
-            //TODO abstract into a secure settings file?
             url: 'http://turingtest.io/api/question', //URL to hit
             qs: {
                 user: 'TODO user or session',
@@ -125,11 +125,3 @@ module.exports = {
         });
     }
 };
-
-//http://stackoverflow.com/questions/5797852/in-node-js-how-do-i-include-functions-from-my-other-files
-//help from http://blog.modulus.io/node.js-tutorial-how-to-use-request-module
-//http://stackoverflow.com/questions/2190850/create-a-custom-callback-in-javascript
-
-
-
-

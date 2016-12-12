@@ -11,15 +11,15 @@ app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
 
 app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
+// This is where you are asked for your name
 app.get('/', function(req, res) {
     res.render('index');
 });
 
+// Go to the chat window with your username.
 app.post('/chat', function(req, res) {
     res.locals.name = req.body.username;
     res.render('chat', {
@@ -27,18 +27,14 @@ app.post('/chat', function(req, res) {
     });
 });
 
+// Start server
 http.listen(3000, function() {
     console.log('listening on *:3000');
 });
 
-//TODO I'm sure there's some better way to do this but...we're kinda hacking
-var queue = []; //Unshift and pop for queue. TODO abstract.
-
-//again, super not ok. quick hack only for balancing matchmaking.
-//TODO make a full, clean matchmaker
-var inquisitors = 0;
-var subjects = 0;
-
+// TODO I'm sure there's some better way to do this but...we're kinda hacking 
+// (and it's not essential for the final project scope). May eventually do w redis?
+var queue = []; // Unshift and pop for queue. TODO abstract.
 
 //For now we're just doing man-machine interactions.
 io.on('connection', function(socket) {
@@ -113,9 +109,7 @@ io.on('connection', function(socket) {
     //MARK - this is where we assign people to rooms/roles.
     //kind of a balancer.
     socket.on('request_room', function(username) {
-        console.log("room requested");
-        // if I come in and there's someone waiting, we'll link up.
-        // Trying to get around race conditions with this.
+        // If I come in and there's someone waiting, we'll link up.
         if (queue.length >= 1) {
             var room = queue.pop();
             socket.join(room);
@@ -134,36 +128,41 @@ io.on('connection', function(socket) {
                 room_name: room,
                 eavesdropping: true,
             });
-        } else { //Otherwise, start my waiting period.
-            socket.join(username); // host my room
+        } 
+        else {
+            // If there's nobody in the queue, join the queue and start my waiting period.
             
-            // add myself to the queue
+            // host my room
+            socket.join(username); // TODO rooms not based on username. (not essential for final project scope)
             queue.unshift(username);
-            console.log(queue);
-            setTimeout(function() { //wait to see if we get selected/paired with a human.
-                console.log("timeout function");
-                // on expiry:
-                // remove myself from the queue - the waiting period is up. Just gonna talk to a robot.
-                var index = queue.indexOf(username); //TODO this is probably subject to race conditions
-                if (index <= -1) { //We've been selected! don't have to do anything.
-                    console.log("selected!");
+            
+            setTimeout(function() {
+                // wait to see if we get paired with a human.
+                // on expiry: remove myself from the queue - the waiting period is up. Just gonna talk to a robot.
+                // TODO test with race conditions. Consider using dictionary-based structure to avoid issues.
+                var index = queue.indexOf(username);
+                if (index <= -1) {
+                    // We've been paired with a human! Don't have to do anything.
                 } else {
                     queue.splice(index, 1);
                     // start robo convo.
-                    if (inquisitors > subjects) {
+                    
+                    var role = randomChoice(["Subject", "Inquisitor", "Inquisitor"]);
+                    if (role == "Subject") {
+                        // Set up room with human subject
+                        
                         io.sockets.in(username).emit("assign_" + username, {
                             role: "Subject",
                             room_name: username,
                             eavesdropping: false,
                         });
-                        subjects++;
 
                         var data = {
                             'person': username,
                             'role': "Subject",
-                            'message': "INITIALIZE", //TODO I guess this works?
+                            'message': "INITIALIZE", //TODO I guess this works but should be cleaner.
                             'room': username,
-                            'transcript': [],
+                            'transcript': ["INITIALIZE"],
                             'eavesdropping': false,
                         };
 
@@ -183,34 +182,23 @@ io.on('connection', function(socket) {
                         });
 
                     } else {
+                        // Set up room with human Inquisitor
                         io.sockets.in(username).emit("assign_" + username, {
                             role: "Inquisitor",
                             room_name: username,
                             eavesdropping: false,
                         });
-                        inquisitors++;
                     }
                 }
 
-            }, 3000);
+            }, 3000); //3-second timeout. TODO abstract.
         }
     });
 
-
-
-    //This is really good for unique info etc.
-    //console.log(io.sockets.connected)
-
+    //console.log(io.sockets.connected) //TODO good for user count and unique ids (not usernames).
 });
 
 
-
-
-
-
-//http://stackoverflow.com/questions/6873607/socket-io-rooms-difference-between-broadcast-to-and-sockets-in
-//http://stackoverflow.com/questions/23619015/creating-a-private-chat-between-a-key-using-a-node-js-and-socket-io
-//http://stackoverflow.com/questions/30497245/expressjs-error-body-parser-deprecated
-//http://stackoverflow.com/questions/14093736/i-cant-get-post-data-when-i-use-express
-//http://stackoverflow.com/questions/23595282/error-no-default-engine-was-specified-and-no-extension-was-provided
-//http://stackoverflow.com/questions/5767325/how-to-remove-a-particular-element-from-an-array-in-javascript
+function randomChoice(arr) {
+    return arr[Math.floor(arr.length * Math.random())];
+}

@@ -10,29 +10,21 @@ from pycorenlp import StanfordCoreNLP
 from sklearn.feature_extraction.text import TfidfVectorizer
 import nltk, string
 import random
-
-
-# Create your views here.
-def index(request):
-    context = {     }     
-    return render(request, 'ttio/index.html', context)
-
-def about(request):
-    context = {     }
-    return render(request, 'ttio/about.html', context)
+from django.conf import settings
 
 
 #Someone has asked Alan something. Return his response.
 def response(request):
-    #TODO will we need some validation? otherwise can get random stuff/errors 
-    #if we have the wrong stuff submitted, which would mess up the model.
+    # TODO will we need some validation? otherwise can get random stuff/errors 
+    # if we have the wrong stuff submitted, which would mess up the model.
+    # not essential for final proj.
     transcript = json.loads(request.body)
-    question = transcript[0] #transcript is backwards - how deep in the convo do you want to go back?
     
-    print "question: " + str(question)
-    
+    #Transcript builds downwards - most recent interactions on top.
+    question = transcript[0]
     
     try:
+        # If we've seen this conversation before, use its best response.
         conversation = Conversation.objects.get(question = question)
         candidates = conversation.responses
         best = best_response(candidates)
@@ -48,12 +40,15 @@ def response(request):
         conversation.save()
         
         return JsonResponse({'response': best})
+
     except ObjectDoesNotExist:
+        # If we haven't seen this question before, use the most similar one.
+        conversations = Conversation.objects.all() # TODO figure out how resource-intensive this is, and whether it can be put db-side
         
-        # use the most similar conversation
-        conversations = Conversation.objects.all() #TODO just how bad is this?
+        # has to at least be a little similar, otherwise go with a random prior.
+        best_similarity = settings.SIMILARITY_THRESHOLD
         best_convo = random.choice(conversations)
-        best_similarity = 0.1 #has to at least be a little similar. TODO abstract.
+        
         for conversation in conversations:
             q = conversation.question
             sim = cosine_sim(q, question)
@@ -61,63 +56,75 @@ def response(request):
                 best_similarity = sim
                 best_convo = conversation
         
+        # Get best response from our most similar question
         candidates = best_convo.responses
         best = best_response(candidates)
         
-        Conversation.objects.create(question=question, responses = best_convo.responses)
+        # Create a new object with the new question and the old one's best responses (cross-pollination)
+        Conversation.objects.create(question = question, responses = best_convo.responses)
         
         return JsonResponse({'response': best})    
 
 
-#Alan must ask something - what does he want to know?
-#takes in a transcript and returns a question - continues the conversation.
+# Alan must ask something - what does he want to know?
+# takes in a transcript and returns a question - continues the conversation.
 def question(request):
     transcript = json.loads(request.body)
-    conversations = Conversation.objects.all()
-    
-    #TODO get this working
-    #conversation = Conversation.objects.annotate(max_fail=Max('failures')).filter(failures=F('max_fail'))
-    
-    toughest = None
-    most_fail = -float('inf')
+    conversations = Conversation.objects.all() # TODO performance/resource analysis
+
+    toughest, most_fail = None, -float('inf')
     for conversation in conversations:
         percent_fail = float(conversation.failures)/float(conversation.frequency)
-            #TODO could add a couple ghost failures to balance the weighting?
         
-        #Threshold is 33% failure - if this question leads to failure a lot, we need to get some help on it.
-        #TODO abstract out the threshold
-        if percent_fail > max(most_fail, 0.33) and not conversation.question in transcript:
+        # If this question leads to failure a lot, we need to get some help on it.
+        if percent_fail > max(most_fail, settings.FAILURE_THRESHOLD) and not conversation.question in transcript:
             toughest = conversation
             most_fail = percent_fail
     
-    
-    
     if toughest == None:
+        # Eventually I hope to be able to rig Alan up to chatbots 
+        # to see whether he can identify them correctly as machines,
+        # But for now we can just assume that the counterpart is human.
         return JsonResponse({'response': "/human"})
     else:
-        #reduce its failure percentage now that we've got some human convo
+        # reduce our perception of p(failure) now that we have some human convo
         toughest.frequency = toughest.frequency + 1
         toughest.save()
+        
         return JsonResponse({'response': toughest.question})
 
+# TODO is this meddling?
 def delete(request):
     transcript = json.loads(request.body)
-    print transcript
+    
+    # NOT IMPLEMENTED - because we are off-policy, as purists we shouldn't touch the model.
+    # Only the good bits of the model (as defined by how good p(success) is) will actually survive.
     
     return HttpResponse(status=201)
 
-def punish(request):
-    #TODO verification - this could get real strange if some other data comes through here
-    transcript = json.loads(request.body)
-    print("punish" + str(transcript))
+
+def clean(request):
+    # TODO clean up the database. Responses with very poor p(success) are removed.
+    # This will hopefully keep us from exponential blowup
     
-    response = transcript[1] #the one before /machine
+    return HttpResponse(status=201)
+
+
+def punish(request):
+    # TODO verification - this could get real strange if some other data comes through here
+    # Not necessary for final project scope
+    
+    transcript = json.loads(request.body)
+    
+    # TODO there is a cleaner way to do this.
+    response = transcript[1] # the one before /machine
     question = transcript[2]
     
     try:
-        conversation = Conversation.objects.get(question = question) #TODO not the best at all
+        conversation = Conversation.objects.get(question = question)
         conversation.failures = F('failures') + 1
         
+        # Update our belief of how good a response is
         if response in conversation.responses:
             frequency = conversation.responses[response]["frequency"]
             failures = conversation.responses[response]["failures"]
@@ -126,6 +133,7 @@ def punish(request):
                 "failures": failures + 1.0,
             }
         else:
+            # probably shouldn't happen since we've got cross-pollination
             conversation.responses[response] = {
                 "frequency": 1.0,
                 "failures": 1.0,
@@ -134,15 +142,19 @@ def punish(request):
         conversation.save()
         
     except ObjectDoesNotExist:
-        print "shouldn't happen"
+        print "ERROR - punish found a question that hasn't yet been added to the model: shouldn't happen."
         
     return HttpResponse(status=201)
     
 
-
+# Takes in a transcript and rewards it
 def reward(request):
+    
     transcript = json.loads(request.body)
-    question = transcript[1] #TODO sometimes this is out of range because the subject talks first.
+    
+    # TODO sometimes this is out of range because the subject talks first. Not essential for final project scope. 
+    # There's also definitely a better/cleaner way to do this.
+    question = transcript[1]
     response = transcript[0]
     
     print "human response to \"" + transcript[1] + "\" is: \"" + transcript[0] + "\""
@@ -165,22 +177,23 @@ def reward(request):
             }
         conversation.save()
         
-    except ObjectDoesNotExist:
-        # This is a new question. Let's start a new model for it.
+    except ObjectDoesNotExist: #(activates during eavesdropping)
+        # This is a new question. 
+        # Let's start a new model for it with the response we've just seen succeed.
         good_response = {
             response: {
                 "frequency": 1.0,
                 "failures": 0.0,
             }
         }
-        Conversation.objects.create(question=question, responses = good_response)
+        Conversation.objects.create(question = question, responses = good_response)
 
     return HttpResponse(status=201)
 
 
 def model(request):
-    # this is kind of a weird thing to have in the api 
-    # with display code and all that but not the end of the world
+    # Display our current beliefs.
+    
     context = {'data':{}}
     for item in Conversation.objects.all():
         context['data'][item.question] = {
@@ -189,51 +202,21 @@ def model(request):
             'frequency': float(item.frequency),
         }
 
-    #return JsonResponse(context)
+    # return JsonResponse(context) more 'API'-style, but don't need to be so strict.
     return render(request, 'ttio/model.html', context)
 
-#it should also maybe eavesdrop? First thing we want it to do is converse.
-#the conversations it's eavesdropping on would be going through socket.io
-#so going to be a bit more complex to hook into/learn from
 
-#if eavesdropping
-    #send transcript to model, don't expect anything back
-
-#if turing testing
-    #send transcript to model, get response sentence back
-    #return
-
+# Ended up not needing the NLP stuff, but may eventually want it back.
 def nlp(request):
-    #TODO setup nlp server
     nlp = StanfordCoreNLP('http://localhost:9000')
     
-    print cosine_sim("asl;dfjal;ksdfahsdf","a;sdjhfalkhsfakh;dfksa")    
+    text = (
+        'Pusheen and Smitha walked along the beach. '
+        'Pusheen wanted to surf, but fell off the surfboard.')
     
-    print "similarities: ", cosine_sim("What Up boss?", "what's up boss?")
+    output = nlp.annotate(text, properties = {
+        'annotators': 'tokenize,ssplit,pos,depparse,parse',
+        'outputFormat': 'json'
+    })
     
-    return JsonResponse({})
-
-
-
-
-
-
-
-
-
-
-#http://stackoverflow.com/questions/8897593/similarity-between-two-text-documents
-#http://stackoverflow.com/questions/4353147/whats-the-best-way-to-handle-djangos-objects-get
-#http://stackoverflow.com/questions/9838264/django-record-with-max-element
-
-
-
-
-
-
-
-
-
-
-
-
+    return JsonResponse(output)

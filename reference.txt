@@ -1,0 +1,60 @@
+Acronyms
+==================
+NLP - Natural Language Processing
+NER - Named Entity Recognition
+PTP - Penn Treebank Project
+PoS - Part of Speech
+
+
+Penn Treebank Parts of Speech:
+==================
+ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
+
+
+nltk
+==================
+sudo pip install -U nltk
+python
+>>> import nltk
+>>> nltk.download()
+    Downloader> d
+        Identifier> all
+
+
+C9
+==================
+ssh in and go to c9sdk directory, then:
+
+    screen
+    node server.js -a condaatje:c9ttio -w ~
+    Ctrl-A, d (to get out of screen)
+
+then go to turingtest.io:8181
+
+
+Nginx
+==================
+sudo ln -s /etc/nginx/sites-available/turingtest /etc/nginx/sites-enabled/turingtest
+
+
+Socket.io
+==================
+node index.js
+turingtest.io:3000
+
+
+Java
+==================
+sudo apt-get install default-jre
+sudo apt-get install default-jdk
+
+
+Ant
+==================
+sudo apt-get install ant
+
+
+NLP
+==================
+https://github.com/stanfordnlp/CoreNLP
+java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer

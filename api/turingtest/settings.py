@@ -132,3 +132,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 #Custom settings
 LEARNING_RATE = 0.5
+SIMILARITY_THRESHOLD = 0.2
+FAILURE_THRESHOLD = 0.33
