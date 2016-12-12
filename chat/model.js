@@ -1,6 +1,6 @@
 var request = require('request');
 
-// These are all mainly the API calls.
+// These are all mainly API calls.
 // This is basically the controller-side interface w/ the Model
 module.exports = {
     //TODO abstract URLs and Strings into a secure settings file?

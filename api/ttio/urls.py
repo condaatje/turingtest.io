@@ -4,6 +4,7 @@ from ttio.views import *
 
 
 urlpatterns = [
+    url(r'^about$', about, name="about"),
     url(r'^question', question, name="question"),
     url(r'^response', response, name="response"),
     url(r'^punish', punish, name="punish"),
@@ -11,4 +12,5 @@ urlpatterns = [
     url(r'^model', model, name="model"),
     url(r'^delete', delete, name="delete"),
     url(r'^nlp', nlp, name="nlp"),
+    url(r'^$', index, name="index"),
 ]

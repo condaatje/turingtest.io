@@ -1,5 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 import nltk, string
+from django.conf import settings
+from util import Counter, sample
 
 stemmer = nltk.stem.porter.PorterStemmer()
 remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
@@ -30,15 +32,23 @@ def cosine_sim(text1, text2):
 #         }
 # }
 def best_response(dictionary):
-    # TODO stochasticity? Might violate blockheadiness, but could be good for learning.
-    
-    best = "Uh what?" # shouldn't go through
-    best_num = float('inf')
+    if settings.STOCHASTICITY == True:
+        responses = Counter()
+        
+        for response, data in dictionary.iteritems():
+            percent_fail = data["failures"] / data["frequency"]
+            responses[response] = percent_fail
+        
+        responses.normalize()
+        return sample(responses)
+    else:
+        best = None
+        best_num = float('inf')
 
-    for response, data in dictionary.iteritems():
-        percent_fail = data["failures"] / data["frequency"]
-        if percent_fail < best_num:
-            best = response
-            best_num = percent_fail
-    
-    return best
+        for response, data in dictionary.iteritems():
+            percent_fail = data["failures"] / data["frequency"]
+            if percent_fail < best_num:
+                best = response
+                best_num = percent_fail
+
+        return best

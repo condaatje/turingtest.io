@@ -25,4 +25,6 @@ http://stackoverflow.com/questions/5767325/how-to-remove-a-particular-element-fr
 http://stackoverflow.com/questions/5797852/in-node-js-how-do-i-include-functions-from-my-other-files
 help from http://blog.modulus.io/node.js-tutorial-how-to-use-request-module
 http://stackoverflow.com/questions/2190850/create-a-custom-callback-in-javascript
-
+http://stackoverflow.com/questions/8003089/dynamically-create-and-submit-form
+http://stackoverflow.com/questions/18614301/keep-overflow-div-scrolled-to-bottom-unless-user-scrolls-up        
+http://stackoverflow.com/questions/6524288/jquery-event-for-user-pressing-enter-in-a-textbox

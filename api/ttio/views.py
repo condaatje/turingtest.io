@@ -13,6 +13,14 @@ import random
 from django.conf import settings
 
 
+def index(request):
+    
+    return JsonResponse({'response': "TODO api GUI?"})
+    
+def about(request):
+    return JsonResponse({'response': "TODO api info?"})
+
+
 #Someone has asked Alan something. Return his response.
 def response(request):
     # TODO will we need some validation? otherwise can get random stuff/errors 

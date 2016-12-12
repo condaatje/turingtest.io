@@ -10,7 +10,6 @@
 </head>
 
 <body>
-    <!--<div class="container-fluid">-->
     <br/><br/><br/>
     <h2 class="text-center">Please note: TuringTest.io is still in development</h2>
     <br/><br/><br/>
@@ -37,15 +36,13 @@
         </div>
     </div>
     
-    <!--</div>-->
     <script>
-    
         /*global io*/ /*global $*/
         var socket = io();
         
-        //TODO For now assuming unique usernames, 
-        //we will have to enforce that later or find a better socket id.
-        //not very secure/well thought out, but not a huge deal for this application.
+        // TODO For now assuming unique usernames, 
+        // we will have to enforce that later or find a better socket id.
+        // not very secure/well thought out, but not a huge deal for this application.
         var role = null;
         window.name = "<%= name %>";
         socket.emit('request_room', window.name);
@@ -53,6 +50,7 @@
         
         
         var room_name = null;
+        
         //TODO assign_Name convention - figure out how to abstract.
         socket.on("assign_<%= name %>", function (msg) {
             if (msg.role == "Inquisitor") {
@@ -87,12 +85,9 @@
         });
         
         socket.on('display_message', function(data) {
-            //console.log("display_message: " + data.message);
             $('#messages').append("\
             <div class='row message-bubble'>\
-            <span>\
-            <strong>" + data.role + " (" + data.person + ")" + ": </strong>\
-            " + data.message + "</span>\
+                <span>\<strong>" + data.role + " (" + data.person + ")" + ": </strong>" + data.message + "</span>\
             </div>");
             $('#scroller').scrollTop($('#messages')[0].scrollHeight);
             window.transcript = data.transcript;
@@ -125,10 +120,6 @@
         socket.on('error', function(msg) {
             $('#messages').append("<div class='row message-bubble'><p class='text-muted'>ERROR:</p><span>" + msg + "</span></div>");
         });
-        
-        //http://stackoverflow.com/questions/8003089/dynamically-create-and-submit-form
-        //http://stackoverflow.com/questions/18614301/keep-overflow-div-scrolled-to-bottom-unless-user-scrolls-up        
-        //http://stackoverflow.com/questions/6524288/jquery-event-for-user-pressing-enter-in-a-textbox
     </script>
 </body>
 
