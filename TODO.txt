@@ -1,38 +1,53 @@
 
 Essential:
 ================================
-Stochasticity in responses
-    - randomly choose from responses weighted on percent success.
-
-NLP
-    - Then move into smarter vectorization for conversations (if possible)
-        - Questions are not independent, conversations flow.
-
-Time delay between question and response (could be another feature in the vector)
-
-Comment the crap out of it/super cleanup & abstraction.
+Thorough comment, clean, and abstraction passses.
 
 
 
 Not essential for Final Project scope:
 ================================
-sentence n-grams for conversation model?
+Quick: Stochasticity in responses
+    - Randomly choose from responses weighted on percent success.
+    - Might violate blockhead property?
 
-Neural Net? Incorporate past few questions in conversation, not just independent
+Quick: Time delay between question and response (could be another feature in the vector)
+Quick: Random aliases for Alan
+Quick: Enforce question/response on the frontend (so no double questions)
+Quick: "Alan has joined the room" messages
+Quick: "Waiting to connect" messages
+Quick: Rooms not based on name. Base on unique socket ID.
+Quick: No swears/racism? 
+    - Dilemma here, because if that's truly something that shows you're human
+        then maybe it should be in there.
+    - Could compromise and bleep them out?
 
-Random aliases for Alan
 
-Rooms not based on name. Base on unique socket ID.
+Move into smarter vectorization for conversations (if possible)
+    - Questions are not independent, conversations flow.
+    - Might violate blockhead property?
+    - Neural Net?
+    - Sentence n-grams?
 
-deal with "asdjlkfha;as;dfa;kljsdfhaksd"
-    - right now Alan doesn't think it's similar to "asdfk;jah;dfkal;sdfasdf"
+Deal with "asdjlkfha;as;dfa;kljsdfhaksd"
+    - Right now Alan doesn't think it's similar to "asdfk;jah;dfkal;sdfasdf"
+
+Identify and ignore trouble/adversarial users.
+
+Better robo inquisitor.
+    - Start with frequent questions (Cold questions)
+    - Then move into ones we've failed (Heating)
+    - "Heating" will have to either be controller-side 
+        or based on transcript length to keep API stateless
 
 Clean up system - multi-server w/ dns-level apps for api etc.
 
 Https?
 
-Load balancer
+Load balancer?
 
-Group Chat? This should at least be in the whitepaper/final paper
+AWS DB?
+
+Group Chat? This should at least be mentioned in the whitepaper.
     - Interesting to see how an AI could take part in a group conversation
     - Punish if singled out, like "/machine Alan"
