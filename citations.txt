@@ -30,3 +30,7 @@ http://stackoverflow.com/questions/18614301/keep-overflow-div-scrolled-to-bottom
 http://stackoverflow.com/questions/6524288/jquery-event-for-user-pressing-enter-in-a-textbox
 http://stackoverflow.com/questions/9232810/change-placeholder-text-using-jquery
 http://stackoverflow.com/questions/21507133/how-do-you-get-exactly-50-odds
+http://stackoverflow.com/questions/16616260/django-template-context-for-loop-traversal
+http://stackoverflow.com/questions/22486402/html-bootstrap-table-title-caption-with-title-on-left-side-and-buttons-on-righ
+http://stackoverflow.com/questions/11481499/django-iterate-number-in-for-loop-of-a-template
+http://stackoverflow.com/questions/346467/format-numbers-in-django-templates

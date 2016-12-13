@@ -24,7 +24,7 @@
                     <div class="container" id="messages">
                         <!--This is where the magic happens-->
                         <!--<div class='row message-bubble'>-->
-                        <!--    <span><strong>Your Name: </strong></span>-->
+                        <!--    <span><strong>Inquisitor: </strong> text</span>-->
                         <!--</div>-->
                     </div>
                     <div class="panel-footer">
@@ -38,8 +38,7 @@
     </div>
     
     <script>
-        // for c9
-        /*global io*/ /*global $*/ /*global location*/
+        /*global io*/ /*global $*/ /*global location*/ // for c9
         var socket = io();
         
         // TODO For now assuming unique usernames, 
@@ -106,7 +105,7 @@
             $('body').bind("enterKey", function(e) {
                 location.reload(); 
             });
-            $('body').keyup(function(event) {
+            $('body').keydown(function(event) {
                 if (event.keyCode == 13) {
                     $(this).trigger("enterKey");
                 }

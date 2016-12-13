@@ -15,11 +15,10 @@
 		{% include 'ttio/header.html' %}
 		
 		<div class="container-fluid">
-		<!--http://stackoverflow.com/questions/16616260/django-template-context-for-loop-traversal-->
 		{% for question, info in data.items %}
 		<br/>
 		<table class="table table-striped">
-			<!--http://stackoverflow.com/questions/22486402/html-bootstrap-table-title-caption-with-title-on-left-side-and-buttons-on-righ-->
+			
 			<caption class="text-center" style="border: inherit; background-color: lightgrey;">
 				<strong>Question: </strong> "{{question}}"
 				<br/>
@@ -34,7 +33,6 @@
 			<tbody>
 				{% for response, props in info.responses.items %}
 				<tr>
-					<!--http://stackoverflow.com/questions/11481499/django-iterate-number-in-for-loop-of-a-template-->
 					<td>"{{response}}"</td> <!-- response -->
 					
 					<td class="text-right">
@@ -56,5 +54,3 @@
 	
 </body>
 {% endblock %}
-
-<!--http://stackoverflow.com/questions/346467/format-numbers-in-django-templates-->

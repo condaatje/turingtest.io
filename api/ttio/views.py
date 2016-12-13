@@ -112,8 +112,20 @@ def delete(request):
 
 
 def clean(request):
-    # TODO clean up the database. Responses with very poor p(success) are removed.
-    # This will hopefully keep us from exponential blowup
+    # Clean up the database. Responses with poor p(success) are removed.
+    # This will hopefully keep us from exponential blowup in cross-pollination.
+    # right now it's exposed, so keep that in mind.
+    
+    for conversation in Conversation.objects.all():
+        responses = {}
+        for response, data in conversation.responses.iteritems():
+            p_fail = data["failures"] / data["frequency"]
+            if p_fail < settings.FAILURE_THRESHOLD:
+                responses[response] = data
+        
+        conversation.responses = responses
+        conversation.save();
+    
     
     return HttpResponse(status=201)
 
