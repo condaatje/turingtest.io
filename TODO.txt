@@ -48,3 +48,8 @@ AWS DB?
 Group Chat? This should at least be mentioned in the whitepaper.
     - Interesting to see how an AI could take part in a group conversation
     - Punish if singled out, like "/machine Alan"
+
+Hook him up to messaging platforms
+    - Facebook Messenger
+    - iMessage
+    - SMS

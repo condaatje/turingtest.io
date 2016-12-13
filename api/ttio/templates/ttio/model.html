@@ -23,12 +23,12 @@
 			<caption class="text-center" style="border: inherit; background-color: lightgrey;">
 				<strong>Question: </strong> "{{question}}"
 				<br/>
-				<strong>Failure Percentage: </strong> {{ info.failures|percent:info.frequency|floatformat:2|intcomma }}%
+				<strong>p(failure): </strong> {{ info.failures|percent:info.frequency|floatformat:2|intcomma }}%
 			</caption>
 			<thead>
 				<tr>
 					<th class="col-sm-11">Response</th>
-					<th class="col-sm-1 text-right">Percent Failure</th>
+					<th class="col-sm-1 text-right">p(failure)</th>
 				</tr>
 			</thead>
 			<tbody>

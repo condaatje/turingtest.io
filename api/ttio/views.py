@@ -134,7 +134,7 @@ def punish(request):
     
     try:
         conversation = Conversation.objects.get(question = question)
-        conversation.failures = F('failures') + 1
+        conversation.failures = F('failures') + (1.0 * settings.FAILURE_WEIGHT)
         
         # Update our belief of how good a response is
         if response in conversation.responses:
