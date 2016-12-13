@@ -16,7 +16,7 @@
     <div class="container">
         <div class="row">
             <div class="panel panel-default">
-                <div id="role" class="panel-heading">Please Wait...</div>
+                <div id="role" class="panel-heading">Please wait, matchmaking...</div>
                 <div id="scroller" class="panel-body pre-scrollable">
                     <div class="container" id="messages">
                         <!--This is where the magic happens-->
@@ -26,7 +26,7 @@
                     </div>
                     <div class="panel-footer">
                         <form action="">
-                            <input placeholder="type /machine or /human to make a guess" class="form-control" id="m" autofocus="autofocus" autocomplete="off"/>
+                            <input placeholder="" class="form-control" id="m" autofocus="autofocus" autocomplete="off"/>
                         </form>
                     </div>
                 </div>
@@ -52,8 +52,10 @@
         socket.on("assign_" + window.name, function (msg) {
             if (msg.role == "Inquisitor") {
                 $('#role').text("You are the Inquisitor - try to figure out whether you're talking to a human or a machine!");    
+                $('#m').attr("placeholder", "type /machine or /human to make a guess");
             } else if (msg.role == "Subject") {
                 $('#role').text("You are the Subject - try to convince your interrogator that you are human!");
+                $('#m').attr("placeholder", "Answer your interrogator's questions.");
             } else {
                 $('#role').text("Error: role is " + msg.role);
             }
