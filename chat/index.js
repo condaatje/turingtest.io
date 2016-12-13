@@ -37,14 +37,9 @@ var queue = []; // Unshift and pop for queue. TODO abstract.
 io.on('connection', function(socket) {
 
     socket.on('Inquisitor', function(data) {
-        data.transcript.unshift(data.message); //prepend
-        io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript, data.eavesdropping));
-
         //this is going to tell the api to update its beliefs
         if (model.handle_guess(data)) {
             // it was a special message, end the game.
-            // some of this could be abstracted, 
-            // but it is kind of that frontend logic layer that doesn't belong in the model
 
             console.log("Handling user guess");
             if (data.eavesdropping == true && data.message == "/human") {
@@ -56,12 +51,18 @@ io.on('connection', function(socket) {
             } else if (data.eavesdropping == false && data.message == "/machine") { //This doesn't happen just yet. Machine-machine interaction.
                 io.sockets.in(data.room).emit('end_game', "The Inquisitor has correctly guessed that the Subject is a machine!");
             }
-        } else if (data.eavesdropping == false) { // we need a response from Alan, it's a human - machine interaction
-            //normal operation with the existing model
+        } else if (data.eavesdropping == false) {
+            // we need a response from Alan, it's a human - machine interaction
+            // normal operation with the existing model
+            data.transcript.unshift(data.message); //prepend
+
+
+            io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript, data.eavesdropping));
             model.get_reply(data, function(status, msg) { //msg is straight response text
                 if (status == "success") {
                     setTimeout(function() {
                         data.transcript.unshift(msg);
+                        model.reward(data); // positive survival delta.
                         var response = model.message("Alan", "Subject", msg, data.transcript, data.eavesdropping);
                         io.sockets.in(data.room).emit('display_message', response);
                     }, Math.floor(Math.random() * 9000) + 1000); // wait between 1 and 10 seconds
@@ -69,6 +70,9 @@ io.on('connection', function(socket) {
                     console.log("Error in getting reply: " + status + msg);
                 }
             });
+        } else {
+            data.transcript.unshift(data.message); //prepend
+            io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript, data.eavesdropping));
         }
     });
 
@@ -76,14 +80,7 @@ io.on('connection', function(socket) {
     socket.on('Subject', function(data) {
         data.transcript.unshift(data.message); //prepend
         io.sockets.in(data.room).emit('display_message', model.message(data.person, data.role, data.message, data.transcript, data.eavesdropping));
-
-        //this is going to tell the api to update its beliefs
-        //TODO how do we want Alan to terminate the game?
-        //For now we should have like 5 questions per session?
-        //Then just have it say that he guessed you were a human
-        //(which will always be right for now)
-        model.reward(data);
-
+        model.reward(data); //positive survival delta. Double when humans talking.
 
         if (data.eavesdropping == false) {
             // we need a response from Alan, it's a human - machine interaction
@@ -104,11 +101,13 @@ io.on('connection', function(socket) {
                     console.log("Error came from the api: " + status + msg);
                 }
             });
+        } else {
+
         }
+
     });
 
-    //MARK - this is where we assign people to rooms/roles.
-    //kind of a balancer.
+    //MARK - this is where we assign people to rooms/roles. Matchmaking.
     socket.on('request_room', function(username) {
         // If I come in and there's someone waiting, we'll link up.
         if (queue.length >= 1) {
@@ -141,13 +140,18 @@ io.on('connection', function(socket) {
                 // on expiry: remove myself from the queue - the waiting period is up. Just gonna talk to a robot.
                 // TODO test with race conditions. Consider using dictionary-based structure to avoid issues.
                 var index = queue.indexOf(username);
+
                 if (index <= -1) {
                     // We've been paired with a human! Don't have to do anything.
                 } else {
                     queue.splice(index, 1);
                     // start robo convo.
 
-                    var role = randomChoice(["Subject", "Inquisitor", "Inquisitor"]);
+                    var role = "Inquisitor";
+                    if (Math.random() >= 0.7) {
+                        // less likely for now. TODO abstract
+                        role = "Subject";
+                    }
                     if (role == "Subject") {
                         // Set up room with human subject
 
@@ -191,14 +195,9 @@ io.on('connection', function(socket) {
                     }
                 }
 
-            }, 3000); //3-second timeout. TODO abstract.
+            }, Math.floor(Math.random() * 9000) + 1000); // TODO abstract boundaries
         }
     });
 
-    //console.log(io.sockets.connected) //TODO good for user count and unique ids (not usernames).
+    //console.log(io.sockets.connected) // TODO good for user count
 });
-
-
-function randomChoice(arr) {
-    return arr[Math.floor(arr.length * Math.random())];
-}

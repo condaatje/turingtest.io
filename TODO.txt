@@ -14,6 +14,9 @@ Quick: No swears/racism?
     - Dilemma here, because if that's truly something that shows you're human
         then maybe it should be in there.
     - Could compromise and bleep them out?
+Quick: Disconnect functionality
+
+Propogate good responses across similar questions
 
 Time delay before answering as a feature in the vector?
 

@@ -125,8 +125,12 @@ def punish(request):
     transcript = json.loads(request.body)
     
     # TODO there is a cleaner way to do this.
-    response = transcript[1] # the one before /machine
-    question = transcript[2]
+    response = transcript[0]
+    question = transcript[1]
+    
+    print "bad response to \"" + question + "\" is: \"" + response + "\""
+    
+    # TODO can punish preceding questions & responses at a discounted rate?
     
     try:
         conversation = Conversation.objects.get(question = question)
@@ -137,8 +141,8 @@ def punish(request):
             frequency = conversation.responses[response]["frequency"]
             failures = conversation.responses[response]["failures"]
             conversation.responses[response] = {
-                "frequency": frequency + 1.0,
-                "failures": failures + 1.0,
+                "frequency": frequency + (1.0 * settings.FAILURE_WEIGHT),
+                "failures": failures + (1.0 * settings.FAILURE_WEIGHT),
             }
         else:
             # probably shouldn't happen since we've got cross-pollination
@@ -165,7 +169,7 @@ def reward(request):
     question = transcript[1]
     response = transcript[0]
     
-    print "human response to \"" + transcript[1] + "\" is: \"" + transcript[0] + "\""
+    print "good response to \"" + transcript[1] + "\" is: \"" + transcript[0] + "\""
     
     try:
         # we've seen this question before,

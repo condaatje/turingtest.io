@@ -3,7 +3,7 @@ var request = require('request');
 // These are all mainly API calls.
 // This is basically the controller-side interface w/ the Model
 module.exports = {
-    //TODO abstract URLs and Strings into a secure settings file?
+    //TODO abstract URLs and Strings into a settings file?
     handle_guess: function(data) {
         if (data.message == "/human") {
             module.exports.reward(data);

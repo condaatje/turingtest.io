@@ -29,3 +29,4 @@ http://stackoverflow.com/questions/8003089/dynamically-create-and-submit-form
 http://stackoverflow.com/questions/18614301/keep-overflow-div-scrolled-to-bottom-unless-user-scrolls-up        
 http://stackoverflow.com/questions/6524288/jquery-event-for-user-pressing-enter-in-a-textbox
 http://stackoverflow.com/questions/9232810/change-placeholder-text-using-jquery
+http://stackoverflow.com/questions/21507133/how-do-you-get-exactly-50-odds
