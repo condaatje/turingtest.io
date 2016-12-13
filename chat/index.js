@@ -11,7 +11,9 @@ app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
 
 app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 app.use(bodyParser.json());
 
 //for now we don't need any of the special stuff, just handle each person as independent
@@ -43,28 +45,26 @@ io.on('connection', function(socket) {
             // it was a special message, end the game.
             // some of this could be abstracted, 
             // but it is kind of that frontend logic layer that doesn't belong in the model
-            
+
             console.log("Handling user guess");
             if (data.eavesdropping == true && data.message == "/human") {
                 io.sockets.in(data.room).emit('end_game', "The Inquisitor has correctly guessed that the Subject is human!");
-            }
-            else if (data.eavesdropping == true && data.message == "/machine") {
+            } else if (data.eavesdropping == true && data.message == "/machine") {
                 io.sockets.in(data.room).emit('end_game', "The Inquisitor has incorrectly guessed that the Subject is a machine!");
-            }
-            else if (data.eavesdropping == false && data.message == "/human") {
+            } else if (data.eavesdropping == false && data.message == "/human") {
                 io.sockets.in(data.room).emit('end_game', "The Inquisitor has incorrectly guessed that the Subject is human!");
-            }
-            else if (data.eavesdropping == false && data.message == "/machine") {//This doesn't happen just yet. Machine-machine interaction.
+            } else if (data.eavesdropping == false && data.message == "/machine") { //This doesn't happen just yet. Machine-machine interaction.
                 io.sockets.in(data.room).emit('end_game', "The Inquisitor has correctly guessed that the Subject is a machine!");
             }
-        } 
-        else if (data.eavesdropping == false) {// we need a response from Alan, it's a human - machine interaction
+        } else if (data.eavesdropping == false) { // we need a response from Alan, it's a human - machine interaction
             //normal operation with the existing model
             model.get_reply(data, function(status, msg) { //msg is straight response text
                 if (status == "success") {
-                    data.transcript.unshift(msg);
-                    var response = model.message("Alan", "Subject", msg, data.transcript, data.eavesdropping);
-                    io.sockets.in(data.room).emit('display_message', response);
+                    setTimeout(function() {
+                        data.transcript.unshift(msg);
+                        var response = model.message("Alan", "Subject", msg, data.transcript, data.eavesdropping);
+                        io.sockets.in(data.room).emit('display_message', response);
+                    }, Math.floor(Math.random() * 9000) + 1000); // wait between 1 and 10 seconds
                 } else {
                     console.log("Error in getting reply: " + status + msg);
                 }
@@ -84,16 +84,22 @@ io.on('connection', function(socket) {
         //(which will always be right for now)
         model.reward(data);
 
-        
-        if (data.eavesdropping == false) {// we need a response from Alan, it's a human - machine interaction
+
+        if (data.eavesdropping == false) {
+            // we need a response from Alan, it's a human - machine interaction
             model.get_question(data, function(status, msg) {
+                //callback when we get the message back
+
                 if (status == "success") {
                     data.transcript.unshift(msg);
                     var response = model.message("Alan", "Inquisitor", msg, data.transcript, data.eavesdropping);
-                    io.sockets.in(data.room).emit('display_message', response);
-                    if (model.handle_model_termination(msg)) {
-                        io.sockets.in(data.room).emit('end_game', "Congrats! You convinced your inquisitor that you are Human!");
-                    }
+
+                    setTimeout(function() {
+                        io.sockets.in(data.room).emit('display_message', response);
+                        if (model.handle_model_termination(msg)) {
+                            io.sockets.in(data.room).emit('end_game', "Congrats! You convinced your inquisitor that you are Human!");
+                        }
+                    }, Math.floor(Math.random() * 9000) + 1000); // TODO abstract, possibly make part of the vector.
                 } else {
                     console.log("Error came from the api: " + status + msg);
                 }
@@ -109,7 +115,7 @@ io.on('connection', function(socket) {
             var room = queue.pop();
             socket.join(room);
             console.log("Matchmaking " + username + " with " + room);
-            
+
             //assign the person that just joined
             io.sockets.in(room).emit("assign_" + username, {
                 role: "Subject",
@@ -123,14 +129,13 @@ io.on('connection', function(socket) {
                 room_name: room,
                 eavesdropping: true,
             });
-        } 
-        else {
+        } else {
             // If there's nobody in the queue, join the queue and start my waiting period.
-            
+
             // host my room
             socket.join(username); // TODO rooms not based on username. (not essential for final project scope)
             queue.unshift(username);
-            
+
             setTimeout(function() {
                 // wait to see if we get paired with a human.
                 // on expiry: remove myself from the queue - the waiting period is up. Just gonna talk to a robot.
@@ -141,11 +146,11 @@ io.on('connection', function(socket) {
                 } else {
                     queue.splice(index, 1);
                     // start robo convo.
-                    
+
                     var role = randomChoice(["Subject", "Inquisitor", "Inquisitor"]);
                     if (role == "Subject") {
                         // Set up room with human subject
-                        
+
                         io.sockets.in(username).emit("assign_" + username, {
                             role: "Subject",
                             room_name: username,

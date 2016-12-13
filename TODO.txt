@@ -7,10 +7,6 @@ Essential for Final Project scope:
 
 Not essential for Final Project scope:
 ================================
-Quick: Time delay between question and response (could be another feature in the vector)
-Quick: Random aliases for Alan
-    - Maybe no names at all?
-    - Not part of the Turing Test, and adds complication...
 Quick: Enforce question/response on the frontend (so no double questions)
 Quick: "Alan has joined the room" messages
 Quick: "Waiting to connect" messages
@@ -19,6 +15,7 @@ Quick: No swears/racism?
         then maybe it should be in there.
     - Could compromise and bleep them out?
 
+Time delay before answering as a feature in the vector?
 
 Move into smarter vectorization for conversations (if possible)
     - Questions are not independent, conversations flow.
