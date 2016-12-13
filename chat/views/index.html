@@ -5,29 +5,28 @@
     <title>Chat</title>
     <link href="/css/main.css" rel="stylesheet">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 </head>
 
 <body>
-    <br/><br/><br/>
-    <h2 class="text-center">Please note: TuringTest.io is still in development</h2>
     <br/><br/><br/>
     
     <!--http://bootsnipp.com/snippets/40W9n-->
     <div class="container">
         <div class="row">
             <div class="panel panel-default">
-                <div class="panel-heading">Begin your conversation</div>
-                <div class="panel-body pre-scrollable">
+                <div id="role" class="panel-heading">Please Wait...</div>
+                <div id="scroller" class="panel-body pre-scrollable">
                     <div class="container" id="messages">
                         <!--This is where the magic happens-->
-                        <div class='row message-bubble'>
-                            <span><strong>Alan: </strong>Please state your name for the record.</span>
-                        </div>
+                        <!--<div class='row message-bubble'>-->
+                        <!--    <span><strong>Your Name: </strong></span>-->
+                        <!--</div>-->
                     </div>
                     <div class="panel-footer">
-                        <form action="/chat" method="post">
-                            <input name="username" class="form-control" id="m" autofocus="autofocus"/>
+                        <form action="">
+                            <input placeholder="type /machine or /human to make a guess" class="form-control" id="m" autofocus="autofocus" autocomplete="off"/>
                         </form>
                     </div>
                 </div>
@@ -35,7 +34,84 @@
         </div>
     </div>
     
-    
+    <script>
+        // for c9
+        /*global io*/ /*global $*/ /*global location*/
+        var socket = io();
+        
+        // TODO For now assuming unique usernames, 
+        // we will have to enforce that later or find a better socket id.
+        // not very secure/well thought out, but not a huge deal for this application.
+        var role = null;
+        window.name = Math.random().toString(36).substring(7); //random id for now.
+        socket.emit('request_room', window.name);
+        var transcript = [];
+        var room_name = null;
+        
+        //TODO assign_Name convention - figure out how to abstract.
+        socket.on("assign_" + window.name, function (msg) {
+            if (msg.role == "Inquisitor") {
+                $('#role').text("You are the Inquisitor - try to figure out whether you're talking to a human or a machine!");    
+            } else if (msg.role == "Subject") {
+                $('#role').text("You are the Subject - try to convince your interrogator that you are human!");
+            } else {
+                $('#role').text("Error: role is " + msg.role);
+            }
+            
+            role = msg.role;
+            room_name = msg.room_name;
+            window.eavesdropping = msg.eavesdropping;
+            console.log(msg);
+        });
+        
+        $('form').submit(function() {
+            
+            var data = {
+                'role': role,
+                'message': $('#m').val(),
+                'room': room_name, //TODO do we need this?
+                'test': "test",
+                'transcript': transcript,
+                'eavesdropping': window.eavesdropping
+            };
+            
+            socket.emit(role, data);
+            $('#m').val('');
+            return false;
+        });
+        
+        socket.on('display_message', function(data) {
+            $('#messages').append("\
+            <div class='row message-bubble'>\
+                <span>\<strong>" + data.role + ": </strong>" + data.message + "</span>\
+            </div>");
+            $('#scroller').scrollTop($('#messages')[0].scrollHeight);
+            window.transcript = data.transcript;
+            window.eavesdropping = data.eavesdropping;
+        });
+        
+        socket.on('end_game', function(msg) {
+            //End game now routes back to the start.
+            //closes the loop so we can deal with new instances functionally.
+            $("#m").remove();
+            $('#messages').append("<div class='row message-bubble'><p class='text-muted'>Game Ended:</p><span>" + msg + "</span></div>");
+            $('#messages').append("<div class='row message-bubble'><p class='text-muted'>Hit Enter to play again</div>");
+            $('#scroller').scrollTop($('#messages')[0].scrollHeight);
+            
+            $('body').bind("enterKey", function(e) {
+                location.reload(); 
+            });
+            $('body').keyup(function(event) {
+                if (event.keyCode == 13) {
+                    $(this).trigger("enterKey");
+                }
+            });
+        });
+        
+        socket.on('error', function(msg) {
+            $('#messages').append("<div class='row message-bubble'><p class='text-muted'>ERROR:</p><span>" + msg + "</span></div>");
+        });
+    </script>
 </body>
 
 </html>

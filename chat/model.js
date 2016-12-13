@@ -37,10 +37,6 @@ module.exports = {
     get_reply: function(data, callback) {
         request({
             url: 'http://turingtest.io/api/response', //URL to hit
-            qs: {
-                user: 'TODO user or session',
-                time: +new Date(),
-            },
             body: JSON.stringify(data.transcript)
         }, function(error, response, body) {
             if (error) {callback("failure", error);}
@@ -57,10 +53,6 @@ module.exports = {
     get_question: function(data, callback) {
         request({
             url: 'http://turingtest.io/api/question', //URL to hit
-            qs: {
-                user: 'TODO user or session',
-                time: +new Date()
-            },
             body: JSON.stringify(data.transcript)
         }, function(error, response, body) {
             if (error) {
@@ -83,10 +75,6 @@ module.exports = {
     reward: function(data) {
         request({
             url: 'http://turingtest.io/api/reward', //URL to hit
-            qs: {
-                user: 'TODO user or session',
-                time: +new Date()
-            },
             body: JSON.stringify(data.transcript)
         }, function(error, response, body) {
             if (error) {
@@ -98,10 +86,6 @@ module.exports = {
     punish: function(data) {
         request({
             url: 'http://turingtest.io/api/punish',
-            qs: {
-                user: 'TODO user or session',
-                time: +new Date()
-            },
             body: JSON.stringify(data.transcript)
         }, function(error, response, body) {
             if (error) {
@@ -113,10 +97,6 @@ module.exports = {
     delete: function(data) {
         request({
             url: 'http://turingtest.io/api/delete',
-            qs: {
-                user: 'TODO user or session',
-                time: +new Date()
-            },
             body: JSON.stringify(data.transcript)
         }, function(error, response, body) {
             if (error) {

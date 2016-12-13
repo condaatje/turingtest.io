@@ -9,10 +9,11 @@ Not essential for Final Project scope:
 ================================
 Quick: Time delay between question and response (could be another feature in the vector)
 Quick: Random aliases for Alan
+    - Maybe no names at all?
+    - Not part of the Turing Test, and adds complication...
 Quick: Enforce question/response on the frontend (so no double questions)
 Quick: "Alan has joined the room" messages
 Quick: "Waiting to connect" messages
-Quick: Rooms not based on name. Base on unique socket ID.
 Quick: No swears/racism? 
     - Dilemma here, because if that's truly something that shows you're human
         then maybe it should be in there.

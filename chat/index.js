@@ -14,16 +14,11 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
-// This is where you are asked for your name
+//for now we don't need any of the special stuff, just handle each person as independent
 app.get('/', function(req, res) {
-    res.render('index');
-});
-
-// Go to the chat window with your username.
-app.post('/chat', function(req, res) {
-    res.locals.name = req.body.username;
-    res.render('chat', {
-        name: req.body.username,
+    //res.locals.name = req.body.username;
+    res.render('index', {
+        //name: req.body.username,
     });
 });
 

@@ -36,8 +36,8 @@ def best_response(dictionary):
         responses = Counter()
         
         for response, data in dictionary.iteritems():
-            percent_fail = data["failures"] / data["frequency"]
-            responses[response] = percent_fail
+            percent_success = (data["frequency"] - data["failures"]) / data["frequency"]
+            responses[response] = percent_success
         
         responses.normalize()
         return sample(responses)
