@@ -10,9 +10,15 @@ Penn Treebank Parts of Speech:
 ==================
 ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
 
+
 Gunicorn
 ==================
 gunicorn -b localhost:8000 turingtest.wsgi --log-file -
+
+
+Postgres
+==================
+sudo service postgresql start
 
 
 nltk
@@ -39,6 +45,7 @@ then go to turingtest.io:8181
 Nginx
 ==================
 sudo ln -s /etc/nginx/sites-available/turingtest /etc/nginx/sites-enabled/turingtest
+sudo nginx
 
 
 Socket.io

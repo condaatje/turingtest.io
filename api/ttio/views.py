@@ -140,7 +140,7 @@ def punish(request):
     response = transcript[0]
     question = transcript[1]
     
-    print "bad response to \"" + question + "\" is: \"" + response + "\""
+    #print "bad response to \"" + question + "\" is: \"" + response + "\""
     
     # TODO can punish preceding questions & responses at a discounted rate?
     
@@ -181,7 +181,7 @@ def reward(request):
     question = transcript[1]
     response = transcript[0]
     
-    print "good response to \"" + transcript[1] + "\" is: \"" + transcript[0] + "\""
+    #print "good response to \"" + transcript[1] + "\" is: \"" + transcript[0] + "\""
     
     try:
         # we've seen this question before,

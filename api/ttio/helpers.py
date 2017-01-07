@@ -38,7 +38,6 @@ def best_response(dictionary):
         for response, data in dictionary.iteritems():
             p_fail = data["failures"] / data["frequency"]
             responses[response] = 1 - p_fail
-            print response, (1 - p_fail)
         
         responses.normalize()
         return sample(responses)
