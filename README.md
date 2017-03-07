@@ -163,9 +163,7 @@ The Controller is a Node server that takes care of matchmaking, and
 processing information from the frontend data-collector to translate for
 the model. Relevant files: index.js, model.js.
 
-##### Matchmaking
-
-Matchmaking is implemented as a timeout queue. I’m not sure
+* Matchmaking: Matchmaking is implemented as a timeout queue. I’m not sure
 whether this data structure has been made before, but it is one that I
 created for this project. Basically, when a user comes in, they wait for
 a few seconds before being assigned a chat partner. If there is a human
@@ -173,25 +171,19 @@ that comes in during those three seconds, the two are paired. Otherwise,
 the waiting party is paired with Alan. Who is the Subject and who is the
 Inquisitor is will be chosen randomly.
 
-##### Chat
-
-Chat is implemented with web sockets. This is essential so that
+* Chat: Chat is implemented with web sockets. This is essential so that
 real human conversation can be simulated. Without instantaneous
 communication, the conversations will not be “real.” The Controller can
 get a question from the human and submit the transcript to the API for
 an almost instantaneous response. Most importantly, this allows us to
 learn in real time from budding transcripts.
 
-##### Learning
-
-The Controller also calls the reward and punish functions of the
+* Learning: The Controller also calls the reward and punish functions of the
 API on transcripts when a connected user guesses Alan’s identity. In
 addition, it continuously rewards transcripts as they build, because we
 have a positive survival delta.
 
-##### Eavesdropping
-
-When we get two humans paired together, it is a goldmine of
+* Eavesdropping: When we get two humans paired together, it is a goldmine of
 information. The Controller lets Alan listen in on the conversation, and
 he uses it to build out his model of what human conversation looks like.
 (Controller continually calls API reward function on human-human
@@ -203,36 +195,26 @@ The Model is implemented as a stateless Django server (Alan) wrapped
 around a database server (the Blockhead). Relevant files: views.py,
 helpers.py, models.py.
 
-##### Reward
-
-When the “Reward” function is called on a transcript, the Model
+* Reward: When the “Reward” function is called on a transcript, the Model
 updates it’s belief of how good that transcript is. At this point, that
 means that p(success) for the last response is elevated. However, I may
 consider making a deeper conversation model than just Question-Answer -
 though I’m debating whether that would violate the Blockhead property.
 
-##### Punish
-
-Similarly, when Alan fails a conversation, his response is
+* Punish: Similarly, when Alan fails a conversation, his response is
 punished - p(success) drops. I’ve made the weight of the punishment
 customizable in the settings, so Alan can learn quickly.
 
-##### Response
-
-When someone requests a response for a transcript, Alan
+* Response: When someone requests a response for a transcript, Alan
 considers it, consults his beliefs, and produces what he believes to be
 a good response for a human. This is the core interaction.
 
-##### Question
-
-The reverse Turing Test - Alan is the Inquisitor. This is used
+* Question: The reverse Turing Test - Alan is the Inquisitor. This is used
 to give him the opportunity to ask humans the questions he has
 difficulty answering, thereby giving him good data for what a human
 would say in response to such questions.
 
-##### Cross-Pollination
-
-When Alan sees a question he hasn’t seen before, he searches all
+* Cross-Pollination: When Alan sees a question he hasn’t seen before, he searches all
 the questions he’s seen to find the most similar one. Then, he sends
 back that question’s best response (if asked). In addition, he creates
 an entry in the database with the new question, and all the responses
@@ -240,16 +222,12 @@ from the original one. The ‘similarity’ function is currently
 implemented as a Cosine Similarity calculation built with nltk and a
 scikit-learn feature extractor (links in repo).
 
-##### Stochasticity
-
-Alan can also have some stochasticity in his responses to
+* Stochasticity: Alan can also have some stochasticity in his responses to
 enhance learning (and not get caught in local minima). However, I’m not
 sure whether this violates the blockhead property so it’s customizable
 in the project settings.
 
-##### Clean
-
-We can also tell “Clean” the database - removing answers that
+* Clean: We can also tell “Clean” the database - removing answers that
 have a bad $p(success)$. This will be important in keeping the db below
 the size of the Accessible Universe. Furthermore, access to the
 frequency, failure, and similarity properties of the conversation models
