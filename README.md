@@ -317,7 +317,7 @@ to set it up on your own instance, I may set up a guide at
 but be aware that it involves a ton of auxiliary installations and
 instructions. What may be preferable is emailing me for the password to
 the remote GUI/IDE running on the AWS EC2 instance
-(christian.ondaatje@gmail.com), where everything is set up for you.
+(), where everything is set up for you.
 
 Group Makeup
 ============
